@@ -488,6 +488,32 @@
   .qcount-row input[type=number]{width:80px;padding:8px 10px;border-radius:8px;border:1px solid #d1d5db;font-size:.9rem;}
   footer.credit{text-align:center;font-size:.78rem;color:var(--muted);margin-top:24px;line-height:1.7;}
   footer.credit .credit-name{font-weight:700;color:var(--primary-dark);font-size:.85rem;}
+
+  /* Report viewer icon (top-right, floats over all screens) */
+  .report-icon-btn{
+    position:fixed;
+    top:14px;
+    right:14px;
+    z-index:200;
+    width:44px;
+    height:44px;
+    border-radius:50%;
+    border:none;
+    background:linear-gradient(135deg,var(--primary),var(--accent));
+    color:#fff;
+    font-size:1.25rem;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 4px 14px rgba(30,41,59,.28);
+    transition:.15s;
+  }
+  .report-icon-btn:hover{transform:translateY(-2px) scale(1.06);box-shadow:0 8px 20px rgba(30,41,59,.32);}
+  @media (max-width:480px){
+    .report-icon-btn{width:38px;height:38px;font-size:1.05rem;top:10px;right:10px;}
+  }
 </style>
 <script>
   window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
@@ -495,6 +521,7 @@
 <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body>
+<button class="report-icon-btn" id="viewReportBtn" title="View Student Reports (password protected)" aria-label="View Student Reports">📊</button>
 <div class="wrap">
   <header class="topbar">
     <div class="logo-row">
@@ -574,6 +601,7 @@
     <div class="test-mode-row">
       <button class="btn secondary" id="showCustomTestBtn">🔀 Custom Test (Combine Chapters)</button>
       <button class="btn secondary" id="showRandomTestBtn">🎲 Mixed Test (Random Selection)</button>
+      <button class="btn secondary" id="showWeakReviewBtn" title="Practice questions you've gotten wrong before, for this class, subject and medium.">🎯 Weak Question Review (0)</button>
     </div>
 
     <div class="mix-box hidden" id="customTestBox">
@@ -604,6 +632,9 @@
       <button class="btn block" id="startRandomBtn" style="margin-top:12px;">Start Random Mixed Test</button>
       <div class="small-note">That many questions will be picked at random from the selected chapters and shuffled into one test.</div>
     </div>
+
+    <div class="small-note" style="margin:2px 0 14px;">🎯 Weak Question Review pulls together every question you've answered wrong before in this class, subject and medium, so you can focus on what needs work. It updates automatically as you improve.</div>
+
 
     <div id="chapterList"></div>
 
@@ -8400,20 +8431,69 @@ const DATA = {
 };
 
 /* ============================================================
+   GOOGLE SHEET INTEGRATION
+   ------------------------------------------------------------
+   1. Create a Google Sheet, then go to Extensions → Apps Script
+      and paste the doPost() script provided alongside this file
+      (gsheet-apps-script.gs) — it saves each submitted row.
+   2. In Apps Script, click Deploy → New deployment → type "Web app",
+      execute as "Me", access "Anyone" → Deploy, then copy the
+      Web App URL it gives you and paste it below as GSHEET_WEB_APP_URL.
+   3. Copy the Google Sheet's normal share link (view access) and
+      paste it below as GSHEET_VIEW_URL — this is what opens when a
+      user enters the correct password from the 📊 icon.
+   ============================================================ */
+const GSHEET_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0VfLM1h8Ko7jbFfiEXfS79CJwUDSNsM7WtxUKajB2nSaKmquemevPG7VOXccke_U1tA/exec";
+const GSHEET_VIEW_URL    = "https://docs.google.com/spreadsheets/d/1MZ281_kQYcOKz11FIUEssrf-p6SAiBwtxrCdjw6YEXY/edit?usp=sharing";
+const REPORT_VIEW_PASSWORD = "computer";
+
+function sendMarksToSheet(payload){
+  if(!GSHEET_WEB_APP_URL || GSHEET_WEB_APP_URL.indexOf('PASTE_YOUR_') === 0){
+    console.warn('GSHEET_WEB_APP_URL is not configured yet — marks were not saved to Google Sheet.');
+    return;
+  }
+  // no-cors: Apps Script web apps don't return readable CORS headers to
+  // fetch(), so the request is fired and forgotten; the sheet still
+  // receives and appends the row server-side.
+  fetch(GSHEET_WEB_APP_URL, {
+    method: 'POST',
+    mode: 'no-cors',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  }).catch(err => console.warn('Could not reach Google Sheet Web App:', err));
+}
+
+function viewStudentReport(){
+  const pwd = prompt('🔒 Enter password to view Student Reports:');
+  if(pwd === null) return; // user cancelled
+  if(pwd === REPORT_VIEW_PASSWORD){
+    if(!GSHEET_VIEW_URL || GSHEET_VIEW_URL.indexOf('PASTE_YOUR_') === 0){
+      alert('The report sheet link has not been configured yet. Add GSHEET_VIEW_URL in the script.');
+      return;
+    }
+    window.open(GSHEET_VIEW_URL, '_blank');
+  } else {
+    alert('❌ Incorrect password.');
+  }
+}
+
+/* ============================================================
    APP STATE & LOGIC
    ============================================================ */
 let state = {
   cls:null, subject:null, medium:'EM',
   name:'', school:'',
   chapters:[], // resolved chapter list for current subject/medium
-  activeSet:[], // current quiz question set [{chIdx,qIdx,q}]
+  activeSet:[], // current quiz question set [{chIdx,qIdx,chTitle,medium,subject,cls,qObj}]
   activeTitle:'',
   answers:[], // selected index per question or -1
-  current:0
+  current:0,
+  isWeakReview:false // true when the current quiz is a cross-subject/medium Weak Question Review
 };
 
 const $ = sel => document.querySelector(sel);
 const $all = sel => document.querySelectorAll(sel);
+$('#viewReportBtn').onclick = viewStudentReport;
 function subjectIcon(subj){
   if(subj==='Computer Science') return '💻';
   if(subj==='Computer Applications') return '🌐';
@@ -8503,6 +8583,7 @@ function renderChapterList(){
   $('#randomTestBox').classList.add('hidden');
   $('#showCustomTestBtn').classList.remove('active-mode');
   $('#showRandomTestBtn').classList.remove('active-mode');
+  updateWeakReviewBtn();
 
   state.chapters.forEach((ch,idx)=>{
     // mix checkbox row
@@ -8613,15 +8694,101 @@ function shuffle(arr){
   return arr;
 }
 
+/* ---------- Weak Question Review (tracked across ALL classes/subjects/mediums) ---------- */
+const WEAK_STORAGE_KEY = 'mcqWeakQuestions_v1';
+
+function loadWeakMap(){
+  try{ return JSON.parse(localStorage.getItem(WEAK_STORAGE_KEY)) || {}; }
+  catch(e){ return {}; }
+}
+function saveWeakMap(map){
+  try{ localStorage.setItem(WEAK_STORAGE_KEY, JSON.stringify(map)); }
+  catch(e){ /* storage unavailable — ignore silently */ }
+}
+function weakKey(cls,subject,chIdx,qIdx){ return `${cls}|${subject}|${chIdx}|${qIdx}`; }
+
+function recordWeakResult(item, isCorrect){
+  const map = loadWeakMap();
+  const key = weakKey(item.cls, item.subject, item.chIdx, item.qIdx);
+  if(isCorrect){
+    if(map[key]) delete map[key]; // mastered — drop it from the weak list
+  } else {
+    map[key] = { cls:item.cls, subject:item.subject, chIdx:item.chIdx, qIdx:item.qIdx, ts:Date.now() };
+  }
+  saveWeakMap(map);
+}
+
+// Scoped to the class + subject currently selected (mirrors Custom/Mixed Test).
+function weakQuestionCount(){
+  const map = loadWeakMap();
+  return Object.values(map).filter(e => e.cls===state.cls && e.subject===state.subject).length;
+}
+
+function buildWeakSet(){
+  const map = loadWeakMap();
+  const set = [];
+  Object.values(map).forEach(entry=>{
+    if(entry.cls !== state.cls || entry.subject !== state.subject) return; // current class+subject only
+    const chapter = state.chapters[entry.chIdx];
+    if(!chapter) return;
+    const q = chapter.q[entry.qIdx];
+    if(!q) return;
+    set.push({
+      chIdx: entry.chIdx, qIdx: entry.qIdx,
+      chTitle: chapterTitle(chapter),
+      medium: state.medium, // always show in the currently selected medium
+      subject: state.subject,
+      cls: state.cls,
+      qObj: q
+    });
+  });
+  return set;
+}
+
+function updateWeakReviewBtn(){
+  const btn = $('#showWeakReviewBtn');
+  if(!btn) return;
+  const n = weakQuestionCount();
+  btn.textContent = `🎯 Weak Question Review (${n})`;
+  btn.disabled = n === 0;
+}
+
+function startWeakReviewQuiz(){
+  const set = buildWeakSet();
+  if(set.length === 0){
+    alert('🎉 No weak questions yet for this class/subject/medium! Any question you answer wrong in a test will show up here for focused review.');
+    return;
+  }
+  shuffle(set);
+  state.isWeakReview = true;
+  state.activeSet = set;
+  state.activeTitle = '🎯 Weak Question Review';
+  state.answers = new Array(set.length).fill(-1);
+  state.current = 0;
+  state.lastChapterIdxArr = null;
+  buildQNumGrid();
+  renderQuestion();
+  show('screen-quiz');
+}
+$('#showWeakReviewBtn').onclick = startWeakReviewQuiz;
+
 function startQuiz(chapterIdxArr, title, forceShuffle, limit){
   let set = [];
   chapterIdxArr.forEach(ci=>{
     state.chapters[ci].q.forEach((q,qi)=>{
-      set.push({chIdx:ci, qIdx:qi, chTitle: chapterTitle(state.chapters[ci])});
+      set.push({
+        chIdx:ci, qIdx:qi,
+        chTitle: chapterTitle(state.chapters[ci]),
+        medium: state.medium,
+        subject: state.subject,
+        cls: state.cls,
+        qObj: q
+      });
     });
   });
   shuffle(set);
   if(limit && limit>0 && limit < set.length) set = set.slice(0, limit);
+  state.isWeakReview = false;
   state.activeSet = set;
   state.activeTitle = title;
   state.answers = new Array(set.length).fill(-1);
@@ -8634,35 +8801,34 @@ function startQuiz(chapterIdxArr, title, forceShuffle, limit){
 
 function currentQObj(){
   const item = state.activeSet[state.current];
-  const chapter = state.chapters[item.chIdx];
-  const q = chapter.q[item.qIdx];
-  return state.medium==='TM' ? q.ta : q.en;
+  return item.medium === 'TM' ? item.qObj.ta : item.qObj.en;
 }
 
 function renderQuestion(){
   const total = state.activeSet.length;
   const item = state.activeSet[state.current];
+  const medium = item.medium;
   $('#quizChapterTitle').textContent = `${subjectIcon(state.subject)} ${state.activeTitle}`;
-  $('#quizChapterTitle').className = state.medium==='TM' ? 'tamil' : '';
+  $('#quizChapterTitle').className = medium==='TM' ? 'tamil' : '';
   $('#quizChapterTitle').style.fontWeight='600'; $('#quizChapterTitle').style.color='var(--primary-dark)';
   const answeredCount = state.answers.filter(a=>a>=0).length;
   $('#quizScoreLive').textContent = `${answeredCount}/${total} answered`;
   $('#progressBar').style.width = (( state.current)/total*100)+'%';
   $('#qCounter').textContent = `Question ${state.current+1} of ${total}`;
   $('#qChapterTag').textContent = item.chTitle;
-  $('#qChapterTag').className = state.medium==='TM' ? 'tamil' : '';
+  $('#qChapterTag').className = medium==='TM' ? 'tamil' : '';
 
   const qd = currentQObj();
   const qTextEl = $('#qText');
   qTextEl.textContent = qd.q;
-  qTextEl.className = 'q-text ' + (state.medium==='TM' ? 'tamil' : '');
+  qTextEl.className = 'q-text ' + (medium==='TM' ? 'tamil' : '');
 
   const optsEl = $('#qOptions'); optsEl.innerHTML='';
   const letters = ['A','B','C','D'];
   qd.o.forEach((opt,i)=>{
     const isSel = state.answers[state.current]===i;
     const b = document.createElement('button');
-    b.className='option-btn '+(state.medium==='TM'?'tamil':'')+(isSel?' selected':'');
+    b.className='option-btn '+(medium==='TM'?'tamil':'')+(isSel?' selected':'');
     const badge = document.createElement('span');
     badge.className='opt-badge';
     badge.textContent = letters[i];
@@ -8758,9 +8924,9 @@ function finishQuiz(){
   const total = state.activeSet.length;
   let correct=0;
   state.activeSet.forEach((item,i)=>{
-    const chapter = state.chapters[item.chIdx];
-    const q = chapter.q[item.qIdx];
-    if(state.answers[i]===q.a) correct++;
+    const isCorrect = state.answers[i]===item.qObj.a;
+    if(isCorrect) correct++;
+    recordWeakResult(item, isCorrect);
   });
   const wrong = total-correct;
   const pct = Math.round((correct/total)*100);
@@ -8777,18 +8943,18 @@ function finishQuiz(){
   const reviewEl = $('#reviewList'); reviewEl.innerHTML='';
   const letters=['A','B','C','D'];
   state.activeSet.forEach((item,i)=>{
-    const chapter = state.chapters[item.chIdx];
-    const q = chapter.q[item.qIdx];
-    const qd = state.medium==='TM' ? q.ta : q.en;
+    const q = item.qObj;
+    const medium = item.medium;
+    const qd = medium==='TM' ? q.ta : q.en;
     const userAns = state.answers[i];
     const isCorrect = userAns === q.a;
 
     const div = document.createElement('div');
     div.className = 'review-item ' + (isCorrect?'correct':'wrong');
     let html = `<span class="tag ${isCorrect?'correct':'wrong'}">${isCorrect? '✓ Correct':'✗ Wrong'}</span>`;
-    html += `<div class="rq ${state.medium==='TM'?'tamil':''}">${i+1}. ${escapeHtml(qd.q)}</div>`;
+    html += `<div class="rq ${medium==='TM'?'tamil':''}">${i+1}. ${escapeHtml(qd.q)}</div>`;
     qd.o.forEach((opt,oi)=>{
-      let cls='review-opt '+(state.medium==='TM'?'tamil':'');
+      let cls='review-opt '+(medium==='TM'?'tamil':'');
       if(oi===q.a) cls+=' correct-ans';
       else if(oi===userAns) cls+=' wrong-ans';
       let tagTxt='';
@@ -8798,6 +8964,21 @@ function finishQuiz(){
     });
     div.innerHTML = html;
     reviewEl.appendChild(div);
+  });
+
+  sendMarksToSheet({
+    date: new Date().toLocaleString('en-IN'),
+    name: state.name,
+    school: state.school,
+    class: state.cls,
+    subject: state.subject,
+    medium: state.medium==='TM' ? 'Tamil Medium' : 'English Medium',
+    chapter: state.activeTitle,
+    correct: correct,
+    total: total,
+    marks: `${correct}/${total}`,
+    percentage: pct + '%',
+    type: state.isWeakReview ? 'Weak Question Review' : 'MCQ'
   });
 
   show('screen-results');
@@ -8815,6 +8996,7 @@ function goContinue(){
   show('screen-chapters');
 }
 function goRetry(){
+  if(state.isWeakReview){ startWeakReviewQuiz(); return; }
   startQuiz(state.lastChapterIdxArr, state.activeTitle);
 }
 $('#continueTopBtn').onclick = goContinue;
@@ -9766,6 +9948,21 @@ function pyFinishChapter(){
       layer.appendChild(p);
     }
   }
+
+  sendMarksToSheet({
+    date: new Date().toLocaleString('en-IN'),
+    name: state.name || 'Not provided',
+    school: state.school || 'Not provided',
+    class: '12',
+    subject: 'Computer Science',
+    medium: 'English Medium',
+    chapter: chapter.title,
+    correct: correct,
+    total: total,
+    marks: `${correct}/${total}`,
+    percentage: pct + '%',
+    type: 'Python Output Practice'
+  });
 
   show('screen-py-result');
 }
