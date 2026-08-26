@@ -200,6 +200,44 @@
     color:white;
     font-weight:600;
   }
+  .choice-pill.disabled-pill{
+    cursor:not-allowed;
+    opacity:.5;
+    background:#f3f4f6;
+  }
+  .choice-pill.disabled-pill:hover{ border-color:var(--border); }
+  .mode-pill{
+    padding:16px 14px;
+  }
+  .mode-pill .mode-title{
+    font-size:1.05rem;
+    font-weight:700;
+  }
+  .mode-pill .mode-sub{
+    font-size:.8rem;
+    font-weight:400;
+    margin-top:4px;
+    color:var(--muted);
+  }
+  .mode-pill.active .mode-sub{ color:rgba(255,255,255,.85); }
+  .try-additional-banner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    background:var(--primary-tint);
+    border:2px solid var(--primary-tint-strong);
+    border-radius:14px;
+    padding:12px 16px;
+    margin-bottom:16px;
+  }
+  .try-additional-banner p{
+    margin:0;
+    font-weight:600;
+    color:var(--primary-dark);
+    font-size:.92rem;
+  }
 
   .btn{
     display:inline-block;
@@ -577,9 +615,20 @@
     </div>
   </div>
 
+  <!-- SCREEN 1B: Book Back vs Additional MCQ mode -->
+  <div class="card hidden" id="screen-mode">
+    <h2 class="section-title">Step 2 — Book Back or Additional MCQs?</h2>
+    <div class="grid2" id="modePicker"></div>
+    <div class="small-note" id="modeAvailNote" style="margin-top:2px;"></div>
+    <div class="btn-row">
+      <button class="btn secondary" id="backToSelectFromMode">← Back</button>
+      <button class="btn" id="toDetailsBtn2" disabled>Next →</button>
+    </div>
+  </div>
+
   <!-- SCREEN 2: Student details -->
   <div class="card hidden" id="screen-details">
-    <h2 class="section-title">Step 2 — Your Details</h2>
+    <h2 class="section-title">Step 3 — Your Details</h2>
     <label>Student Name</label>
     <input type="text" id="studentName" placeholder="Enter your name">
     <label>School Name</label>
@@ -596,7 +645,12 @@
       <span>👤 <b id="showName"></b> &nbsp;|&nbsp; 🏫 <b id="showSchool"></b></span>
       <span id="showSubjectMedium"></span>
     </div>
-    <h2 class="section-title">Step 3 — Choose a Chapter</h2>
+    <h2 class="section-title" id="chaptersStepTitle">Step 4 — Choose a Chapter</h2>
+
+    <div class="try-additional-banner hidden" id="tryOtherModeBanner">
+      <p id="tryOtherModeText"></p>
+      <button class="btn secondary btn-sm" id="tryOtherModeBtn">Click here →</button>
+    </div>
 
     <div class="test-mode-row">
       <button class="btn secondary" id="showCustomTestBtn">🔀 Custom Test (Combine Chapters)</button>
@@ -673,6 +727,10 @@
 
   <!-- SCREEN 5: Results -->
   <div class="card hidden" id="screen-results">
+    <div class="try-additional-banner hidden" id="tryOtherModeResultsBanner">
+      <p id="tryOtherModeResultsText"></p>
+      <button class="btn secondary btn-sm" id="tryOtherModeResultsBtn">Click here →</button>
+    </div>
     <div class="btn-row" style="margin-top:0;">
       <button class="btn secondary" id="continueTopBtn">↻ Continue to Next Chapter</button>
       <button class="btn secondary" id="retryTopBtn">🔁 Retry this Chapter</button>
@@ -786,7 +844,7 @@ const CH = [
     {a:0, en:{q:"The small sections of code that are used to perform a particular task is called",o:["Subroutines","Files","Pseudo code","Modules"]}, ta:{q:"ஒரு குறிப்பிட்ட செயலைச் செய்வதற்காக பயன்படுத்தப்படும் குறிமுறைகளின் சிறிய பகுதியே",o:["துணை நிரல்கள்","கோப்புகள்","Pseudo குறிமுறை","தொகுதிகள்"]}},
     {a:1, en:{q:"Which of the following is a unit of code that is often defined within a greater code structure?",o:["Subroutines","Function","Files","Modules"]}, ta:{q:"பின்வரும் எந்த அலகு ஒரு பெரிய குறிமுறை கட்டமைப்பில் வரையறுக்கப்பட்டுள்ளது?",o:["துணை நிரல்கள்","செயற்கூறு","கோப்புகள்","தொகுதிகள்"]}},
     {a:2, en:{q:"Which of the following is a distinct syntactic block?",o:["Subroutines","Function","Definition","Modules"]}, ta:{q:"பின்வரும் எது தனித்தன்மையான தொடரியல் தொகுதிகளைக் கொண்டதாகும்?",o:["துணை நிரல்கள்","செயற்கூறு","வரையறை","தொகுதிகள்"]}},
-    {a:3, en:{q:"The variables in a function definition are called as",o:["Subroutines","Function","Definition","Parameters"]}, ta:{q:"செயற்கூறு வரையறையில் உள்ள மாறிகள் எவ்வாறு அழைக்கப்படுகிறது?",o:["துணை நிரல்கள்","செயற்கூறு","செயலுருபு","அளபுருக்கள்"]}},
+    {a:3, en:{q:"The variables in a function definition are called as",o:["Subroutines","Function","Definition","Parameters"]}, ta:{q:"செயற்கூறு வரையறையில் உள்ள மாறிகள் எவ்வாறு அழைக்கப்படுகிறது?",o:["துணை நிரல்கள்","அளபுருக்கள்","செயற்கூறு","செயலுருபு"]}},
     {a:0, en:{q:"The values which are passed to a function definition are called",o:["Arguments","Subroutines","Function","Definition"]}, ta:{q:"செயற்கூறு வரையறைக்கு அனுப்பப்படும் மதிப்புகள் எவ்வாறு அழைக்கப்படுகிறது?",o:["செயலுருபுகள்","துணை நிரல்கள்","செயற்கூறு","வரையறை"]}},
     {a:1, en:{q:"Which of the following are mandatory to write the type annotations in the function definition?",o:["{ }","( )","[ ]","< >"]}, ta:{q:"தரவு வகை குறிப்பு எழுதும்போது, எது கட்டாயமாகிறது?",o:["{ }","( )","[ ]","< >"]}},
     {a:2, en:{q:"Which of the following defines what an object can do?",o:["Operating System","Compiler","Interface","Interpreter"]}, ta:{q:"பின்வரும் எது ஒரு பொருள் செய்ய வேண்டியதை தீர்மானிக்கிறது?",o:["இயக்க அமைப்பு","நிரல் பெயர்ப்பி","இடைமுகம்","தொகுப்பான்"]}},
@@ -8425,10 +8483,655 @@ const CA11 = [
   }
 ];
 
+const CH_ADD = [
+{
+  en:"1. Function", ta:"பாடம் 1 - செயற்கூறு",
+  q:[
+    {a:2, en:{q:"Which is the basic building block of computer programs?", o:["Argument", "Parameter", "Subroutine", "Interface"]}, ta:{q:"பின்வருவனவற்றுள் எது கணினி மொழிகளின் அடிப்படை கட்டுமான தொகுதியாக விளங்குகிறது?", o:["செயலுருபு", "அளபுரு", "துணைநிரல்", "இடைமுகம்"]}},
+    {a:3, en:{q:"A function definition which calls itself is called:", o:["Main function", "Self-function", "Subroutine", "Recursive function"]}, ta:{q:"தன்னைத் தானே அழைத்துக்கொள்ளும் செயற்கூறு வரையறைக்கு என்ன பெயர்?", o:["முதன்மை செயற்கூறு", "சுய செயற்கூறு", "துணைநிரல்", "தற்சுழற்சி செயற்கூறு"]}},
+    {a:2, en:{q:"The syntax to define a function begins with which keyword?", o:["fun", "func", "let", "rec"]}, ta:{q:"செயற்கூறு வரையறை எந்த சிறப்புச் சொல்லோடு அறிமுகப்படுத்தப்படல் வேண்டும்?", o:["fun", "func", "let", "rec"]}},
+    {a:0, en:{q:"Which keyword indicates that the function is a recursive function?", o:["rec", "recursive", "recur", "recu"]}, ta:{q:"எந்த சொல்லைக் கொண்டு தற்சுழற்சி செயற்கூறு அறிமுகப்படுத்தப்படல் வேண்டும்?", o:["rec", "recursive", "recur", "recu"]}},
+    {a:1, en:{q:"Which of the following functions do not have any side effects?", o:["User defined functions", "Pure functions", "Impure functions", "Assigned functions"]}, ta:{q:"எந்த செயற்கூற்றை மதிப்பீடு செய்யும் போது பக்க விளைவு ஏற்படாது?", o:["பயனர் வரையறுத்த", "Pure செயற்கூறு", "Impure செயற்கூறு", "மதிப்பிருத்தப்பட்ட"]}},
+    {a:2, en:{q:"Which of the following function is an impure function?", o:["strlen()", "sin()", "random()", "gcd()"]}, ta:{q:"கீழ்க்காணும் செயற்கூறுகளில் impure செயற்கூறு எது?", o:["strlen()", "sin()", "random()", "gcd()"]}}
+  ]
+},
+{
+  en:"2. Data Abstraction", ta:"பாடம் 2 - தரவு அருவமாக்கம்",
+  q:[
+    {a:3, en:{q:"The expansion of ADT is:", o:["Built-in datatype", "Derived datatype", "Concrete datatype", "Abstract Data Type"]}, ta:{q:"ADT-ன் விரிவாக்கம்:", o:["Built-in datatype", "Derived datatype", "Concrete datatype", "Abstract Data Type"]}},
+    {a:2, en:{q:"ADT can be implemented using:", o:["Singly linked list", "Doubly linked list", "Either A or B", "Neither A nor B"]}, ta:{q:"எதனைப் பயன்படுத்தி ADT செயல்படுத்தப்படலாம்?", o:["ஒற்றை இணைப்புப் பட்டியல்", "இரட்டை இணைப்புப் பட்டியல்", "அ அல்லது ஆ", "அ இல்லை ஆ இல்லை"]}},
+    {a:0, en:{q:"Which provides modularity in programming?", o:["Abstraction", "Constructor", "Recursion", "Structures"]}, ta:{q:"பின்வருவனவற்றில் எது நிரலுக்கு கூறுநிலையை வழங்குகிறது?", o:["அருவமாக்கம்", "ஆக்கிகள்", "தற்சுழற்சி", "கட்டுருக்கள்"]}},
+    {a:2, en:{q:"The expansion of CDT is:", o:["Built-in datatype", "Derived datatype", "Concrete Data Type", "Abstract Data Type"]}, ta:{q:"CDT-ன் விரிவாக்கம்:", o:["Built-in datatype", "Derived datatype", "Concrete Data Type", "Abstract Data Type"]}},
+    {a:1, en:{q:"How many types of functions are needed to facilitate data abstraction?", o:["3", "2", "5", "4"]}, ta:{q:"தரவு அருவமாக்கத்தை செயல்படுத்த எத்தனை வகையான செயற்கூறுகள் உருவாக்கப்பட வேண்டும்?", o:["3", "2", "5", "4"]}}
+  ]
+},
+{
+  en:"3. Scoping", ta:"பாடம் 3 - வரையெல்லை",
+  q:[
+    {a:2, en:{q:"A variable which is declared inside a function which contains another function definition:", o:["Local", "Global", "Enclosed", "Built-in"]}, ta:{q:"மற்றொரு செயற்கூறு வரையறையை தன்னுள் கொண்ட ஒரு வெளி செயற்கூறினுள் அறிவிக்கப்படும் மாறி:", o:["உள்ளமை", "முழுதளாவிய", "அடைக்கப்பட்ட", "உள்ளிணைந்த"]}},
+    {a:0, en:{q:"Which are loaded as soon as library files are imported into the program?", o:["Built-in scope", "Global scope", "Enclosed scope", "Local scope"]}, ta:{q:"நூலக கோப்புகள் நிரலில் செயல்பட தொடங்கியவுடன் இறக்கப்படும் மாறிகள்:", o:["உள்ளிணைந்த", "முழுதளாவிய", "அடைக்கப்பட்ட", "உள்ளமை"]}},
+    {a:1, en:{q:"The rule used to decide the order in which scopes are searched:", o:["LBEG", "LEGB", "GEBL", "GBLE"]}, ta:{q:"வரையெல்லை தேடப்பட வேண்டிய வரிசையைத் தீர்மானிக்கும் விதி:", o:["LBEG", "LEGB", "GEBL", "GBLE"]}},
+    {a:2, en:{q:"The duration for which a variable is alive is called its:", o:["Scope time", "End time", "Life time", "Variable time"]}, ta:{q:"ஒரு மாறி குறிமுறையில் பயன்படுத்தப்படும் நேரமே அதன்:", o:["Scope time", "End time", "Life time", "Variable time"]}},
+    {a:0, en:{q:"In terms of hierarchy, the scope with highest priority is:", o:["Local", "Enclosed", "Global", "Built-in"]}, ta:{q:"படிநிலையைப் பொறுத்தவரை அதிக முன்னுரிமை கொண்ட வரையெல்லை:", o:["உள்ளமை", "அடைக்கப்பட்ட", "முழுதளாவிய", "உள்ளிணைந்த"]}},
+    {a:1, en:{q:"By default, all members in a Python class are:", o:["Private", "Public", "Protected", "All of these"]}, ta:{q:"பைத்தானில் தானமைவாக இனக்குழுவின் அனைத்து உறுப்புகளும்:", o:["Private", "Public", "Protected", "அனைத்தும்"]}}
+  ]
+},
+{
+  en:"4. Algorithmic Strategies", ta:"பாடம் 4 - நெறிமுறையின் யுக்திகள்",
+  q:[
+    {a:3, en:{q:"Which one of the following is not a factor to measure the execution time of an algorithm?", o:["Speed of the machine", "Operating system", "Programming language used", "Selection"]}, ta:{q:"நெறிமுறையின் நேர செயல்திறனை அளவிடுவதற்கு பின்வருவனவற்றுள் எது ஒரு காரணி அல்ல?", o:["இயந்திரத்தின் வேகம்", "இயக்க அமைப்பு", "நிரலாக்க மொழி", "தேர்ந்தெடுப்பு"]}},
+    {a:3, en:{q:"The algorithm that uses 'Divide and Conquer' technique is:", o:["Insertion sort", "Bubble sort", "Linear search", "Binary search"]}, ta:{q:"கீழ்க்கண்டவற்றில் எது பிரித்து கைப்பற்றுதல் நெறிமுறையைப் போல் மடக்கை நேரத்தில் நிறைவேற்றும்?", o:["செருகும் வரிசையாக்கம்", "குமிழி வரிசையாக்கம்", "வரிசை தேடல்", "இருமத் தேடல்"]}},
+    {a:0, en:{q:"Time complexity of bubble sort in best case is:", o:["O(n)", "θ(n log n)", "O(n^2)", "θ(n(log n)^2)"]}, ta:{q:"குமிழி வரிசையாக்கத்தின் மிகச் சிறந்த நிலையில் அதன் நேர சிக்கல்தன்மை:", o:["O(n)", "θ(n log n)", "O(n^2)", "θ(n(log n)^2)"]}},
+    {a:0, en:{q:"A theoretical performance analysis of an algorithm is:", o:["Priori estimates", "Posteriori testing", "Space factor", "Time factor"]}, ta:{q:"நெறிமுறையின் கோட்பாட்டு செயல்திறன் பகுப்பாய்வு என்பது:", o:["முந்தைய மதிப்பீடு", "பிந்தைய சோதனை", "இடக்காரணி", "நேரக்காரணி"]}}
+  ]
+},
+{
+  en:"5. Python - Variables and Operators", ta:"பாடம் 5 - பைத்தான் அறிமுகம் - மாறிகள் மற்றும் செயற்குறிகள்",
+  q:[
+    {a:2, en:{q:"Expand: IDLE", o:["Integrated Device Learning Editor", "Internal Development Loading Environment", "Integrated Development and Learning Environment", "Internal Drive Loaded Environment"]}, ta:{q:"IDLE என்பதன் விரிவாக்கம்:", o:["Integrated Device Learning Editor", "Internal Development Loading Environment", "Integrated Development Learning Environment", "Internal Drive Loaded Environment"]}},
+    {a:1, en:{q:"To run the Python script by pressing the key:", o:["F2", "F5", "F7", "F10"]}, ta:{q:"பைத்தான் ஸ்கிரிப்டை இயக்க அழுத்த வேண்டிய சாவி:", o:["F2", "F5", "F7", "F10"]}},
+    {a:3, en:{q:"The floor division operator in Python is:", o:["/", "%", "%%", "//"]}, ta:{q:"பைத்தானின் முழு எண் வகுத்தி செயற்குறி எது?", o:["/", "%", "%%", "//"]}}
+  ]
+},
+{
+  en:"6. Control Structures", ta:"பாடம் 6 - கட்டுப்பாட்டு கட்டமைப்புகள்",
+  q:[
+    {a:2, en:{q:"What is the output of: for i in range(2,10,2): print(i, end=' ')?", o:["8 6 4 2", "2 4 6 8 10", "2 4 6 8", "2 4 6"]}, ta:{q:"for i in range(2,10,2): print(i, end=' ') என்பதன் வெளியீடு என்ன?", o:["8 6 4 2", "2 4 6 8 10", "2 4 6 8", "2 4 6"]}},
+    {a:1, en:{q:"The statement used to skip the remaining part of the loop and start with next iteration is:", o:["break", "continue", "pass", "jump"]}, ta:{q:"மடக்கின் மீதமுள்ள குறிமுறையைத் தவிர்த்து அடுத்த மடக்கு செயலை ஆரம்பிக்கும் கூற்று:", o:["break", "continue", "pass", "தாவுதல்"]}},
+    {a:2, en:{q:"The optional parameter of range() function in Python is:", o:["start", "stop", "step", "slice"]}, ta:{q:"பைத்தான் range() செயற்கூறின் விருப்ப அளபுரு:", o:["start", "stop", "step", "slice"]}}
+  ]
+},
+{
+  en:"7. Python Functions", ta:"பாடம் 7 - பைத்தான் செயற்கூறுகள்",
+  q:[
+    {a:1, en:{q:"Evaluate the function output: x = 14.4; print(math.floor(x))", o:["13", "14", "15", "14.3"]}, ta:{q:"x = 14.4; print(math.floor(x)) என்பதன் வெளியீடு என்ன?", o:["13", "14", "15", "14.3"]}},
+    {a:1, en:{q:"The symbol used to define Variable-length arguments in Python is:", o:["#", "*", "$", ":"]}, ta:{q:"மாறும் நீள செயலுருபுகளைக் குறிக்க பயன்படும் குறியீடு எது?", o:["#", "*", "$", ":"]}},
+    {a:2, en:{q:"Non-keyword variable arguments are called as:", o:["Sets", "List", "Tuples", "Dictionary"]}, ta:{q:"சிறப்புச் சொற்களற்ற மாறி அளபுருக்கள் எவ்வாறு அழைக்கப்படும்?", o:["Sets", "List", "Tuples", "Dictionary"]}},
+    {a:3, en:{q:"Which of the following is not an argument type?", o:["Required arguments", "Default arguments", "Keyword arguments", "Fixed length arguments"]}, ta:{q:"பின்வருவனவற்றுள் எது செயலுருபின் வகை அல்ல?", o:["தேவைப்படும் செயலுருபு", "தானமைவு செயலுருபு", "சிறப்புச் சொல் செயலுருபு", "நிலை நீள செயலுருபு"]}}
+  ]
+},
+{
+  en:"8. Strings and String Manipulation", ta:"பாடம் 8 - சரங்கள் மற்றும் சரங்களை கையாளுதல்",
+  q:[
+    {a:3, en:{q:"What will be the output of: str='NEW DELHI'; str[3]='-'?", o:["NEW-DELHI", "NE-DELHI", "NEW DELHI", "TypeError (Error)"]}, ta:{q:"str='NEW DELHI'; str[3]='-' என்பதன் வெளியீடு யாது?", o:["NEW-DELHI", "NE-DELHI", "NEW DELHI", "Error (பிழை)"]}},
+    {a:2, en:{q:"The operator used to display a string in multiple number of times is:", o:["+", "&", "*", "++"]}, ta:{q:"சரங்களை பலமுறை பயன்படுத்தும் செயற்குறி எது?", o:["+", "&", "*", "++"]}},
+    {a:2, en:{q:"Which command can be used to remove entire string variable in Python?", o:["rem", "remove", "del", "delete"]}, ta:{q:"பைத்தானின் எந்த கட்டளை ஒரு சர மாறியை முழுமையாக நீக்கப் பயன்படுகிறது?", o:["rem", "remove", "del", "delete"]}},
+    {a:3, en:{q:"What will be the output of: str1='COMPUTER'; print(str1[::2])?", o:["ER", "CO", "OPTR", "CMUE"]}, ta:{q:"str1='COMPUTER'; print(str1[::2]) என்பதன் வெளியீடு என்ன?", o:["ER", "CO", "OPTR", "CMUE"]}},
+    {a:0, en:{q:"What is the output of: str1='Computer Science'; print(str1[::-1])?", o:["ecneics retupmoC", "Computer Science", "eniS eumC", "Cmue Sine"]}, ta:{q:"str1='Computer Science'; print(str1[::-1]) என்பதன் வெளியீடு:", o:["ecneics retupmoC", "Computer Science", "eniS eumC", "Cmue Sine"]}}
+  ]
+},
+{
+  en:"9. Lists, Tuples, Sets and Dictionary", ta:"பாடம் 9 - (List, Tuples, Set மற்றும் Dictionary) தொகுப்பு தரவினங்கள்",
+  q:[
+    {a:3, en:{q:"Marks = [20, 40, 60, 80, 100]; print(Marks[-2]). What will be the output?", o:["60", "100", "40", "80"]}, ta:{q:"Marks = [20, 40, 60, 80, 100]; print(Marks[-2]). இதன் வெளியீடு என்ன?", o:["60", "100", "40", "80"]}},
+    {a:1, en:{q:"Marks = [10, 23, 41, 75]; print(Marks[-3]). What is the output?", o:["10", "23", "41", "75"]}, ta:{q:"Marks = [10, 23, 41, 75]; print(Marks[-3]). பின்வரும் குறிமுறைக்கான வெளியீடு என்ன?", o:["10", "23", "41", "75"]}},
+    {a:2, en:{q:"Which function is used to find the length of a list in Python?", o:["for()", "range()", "len()", "length()"]}, ta:{q:"பைத்தானின் எந்த கட்டளை ஒரு Listன் நீளத்தை கண்டுபிடிக்கப் பயன்படுகிறது?", o:["for()", "range()", "len()", "length()"]}},
+    {a:1, en:{q:"Which function is used to generate a series of values in Python?", o:["series()", "range()", "list()", "tuple()"]}, ta:{q:"எந்த செயற்கூறு பைத்தானில் தொடர்மதிப்புகளை உருவாக்கப் பயன்படுகிறது?", o:["series()", "range()", "list()", "tuple()"]}},
+    {a:2, en:{q:"Which is a mutable and unordered collection of elements without duplicates?", o:["List", "Tuple", "Set", "Dictionary"]}, ta:{q:"மாறக்கூடிய மற்றும் நகல்கள் இல்லாத வரிசைப்படுத்தப்படாத உறுப்புகளின் தொகுப்பாகும்:", o:["List", "Tuple", "Set", "Dictionary"]}},
+    {a:2, en:{q:"How many elements are in: MyList = [78, 91, 34, [32, 61, 85], 65]?", o:["3", "4", "5", "7"]}, ta:{q:"MyList = [78, 91, 34, [32, 61, 85], 65] இதில் எத்தனை உறுப்புகள் உள்ளன?", o:["3", "4", "5", "7"]}}
+  ]
+},
+{
+  en:"10. Python Classes and Objects", ta:"பாடம் 10 - பைத்தான் இனக்குழுக்கள் மற்றும் பொருள்கள்",
+  q:[
+    {a:1, en:{q:"The first parameter of class method in Python must be:", o:["this", "self", "new", "def"]}, ta:{q:"இனக்குழு வழிமுறையின் முதல் அளபுரு:", o:["this", "self", "new", "def"]}},
+    {a:3, en:{q:"Class instantiation is:", o:["Creating a class", "Creating a constructor", "Creating a destructor", "Creating an object"]}, ta:{q:"இனக்குழு சான்றுருவாக்கல் என்பது:", o:["ஒரு இனக்குழுவை உருவாக்குதல்", "ஒரு ஆக்கியை உருவாக்குதல்", "ஒரு அழிப்பியை உருவாக்குதல்", "ஒரு பொருளை உருவாக்குதல்"]}}
+  ]
+},
+{
+  en:"11. Database Concepts", ta:"பாடம் 11 - தரவுதள கருத்துருக்கள்",
+  q:[
+    {a:1, en:{q:"In ER model, attributes are represented by:", o:["Rectangle", "Ellipse", "Diamond", "Triangle"]}, ta:{q:"ER வரைபடத்தில் பண்புக்கூறுகள் எதனால் குறிக்கப்படுகின்றன?", o:["செவ்வகம்", "நீள்வட்டம் (Ellipse)", "வைரம்", "முக்கோணம்"]}},
+    {a:0, en:{q:"Entities in ER model are represented by:", o:["Rectangle", "Ellipse", "Diamond", "Circle"]}, ta:{q:"ER வரைபடத்தில் Entity எதனால் குறிக்கப்படுகிறது?", o:["செவ்வகம் (Rectangle)", "நீள்வட்டம்", "வைரம்", "வட்டம்"]}},
+    {a:2, en:{q:"Relationships in ER model are represented by:", o:["Rectangle", "Ellipse", "Diamond", "Hexagon"]}, ta:{q:"ER வரைபடத்தில் உறவுநிலைகள் எதனால் குறிக்கப்படுகின்றன?", o:["செவ்வகம்", "நீள்வட்டம்", "வைரம் (Diamond)", "அறுகோணம்"]}}
+  ]
+},
+{
+  en:"12. Structured Query Language (SQL)", ta:"பாடம் 12 - வினவல் அமைப்பு மொழி",
+  q:[
+    {a:1, en:{q:"Which of the following is a DCL command?", o:["SELECT", "GRANT", "COMMIT", "REVOKE"]}, ta:{q:"பின்வருவனவற்றுள் எது DCL கட்டளை ஆகும்?", o:["SELECT", "Grant", "Commit", "Revoke"]}},
+    {a:3, en:{q:"Which command deletes all rows permanently without deleting table structure?", o:["DELETE", "REMOVE", "DROP", "TRUNCATE"]}, ta:{q:"அட்டவணை கட்டமைப்பை நீக்காமல் அனைத்து பதிவுகளையும் நீக்கும் கட்டளை:", o:["DELETE", "REMOVE", "DROP", "TRUNCATE"]}},
+    {a:3, en:{q:"Which command is used to undo the transaction?", o:["COMMIT", "SAVEPOINT", "GRANT", "ROLLBACK"]}, ta:{q:"பரிவர்த்தனையை பழைய நிலைக்கு மாற்றும் TCL கட்டளை:", o:["Commit", "Savepoint", "Grant", "Rollback"]}}
+  ]
+},
+{
+  en:"13. Python and CSV Files", ta:"பாடம் 13 - பைத்தான் மற்றும் CSV கோப்புகள்",
+  q:[
+    {a:3, en:{q:"CSV stands for:", o:["Common Separated Values", "Control Separated Values", "Comma System Values", "Comma Separated Values"]}, ta:{q:"CSV என்பதன் விரிவாக்கம்:", o:["Common Separated Values", "Control Separated Values", "Comma System Values", "Comma Separated Values"]}},
+    {a:1, en:{q:"Which parameter in csv.reader removes whitespace immediately following delimiter?", o:["skipspace", "skipinitialspace", "removespace", "trim"]}, ta:{q:"பிரிப்பானைத் தொடர்ந்து வரும் வெற்று இடைவெளிகளை நீக்க csv.reader-ல் பயன்படும் அளபுரு:", o:["skipspace", "skipinitialspace", "removespace", "trim"]}},
+    {a:3, en:{q:"Which function is used to close an open file in Python?", o:["exit()", "stop()", "end()", "close()"]}, ta:{q:"பைத்தானில் திறக்கப்பட்ட கோப்பினை மூட உதவும் செயற்கூறு எது?", o:["exit()", "stop()", "end()", "close()"]}},
+    {a:1, en:{q:"A custom group of formatting parameters in CSV module is called:", o:["format", "dialect", "schema", "record"]}, ta:{q:"CSV தொகுதியில் வடிவமைப்பு அளபுருக்களின் தொகுப்பு எவ்வாறு அழைக்கப்படுகிறது?", o:["format", "dialect", "schema", "record"]}}
+  ]
+},
+{
+  en:"14. Importing C++ Programs in Python", ta:"பாடம் 14 - பைத்தானில் C++ நிரல்களை இறக்கம் செய்தல்",
+  q:[
+    {a:0, en:{q:"The built-in special variable that stores the name of current module is:", o:["__name__", "__main__", "__file__", "__doc__"]}, ta:{q:"நடப்பு தொகுதியின் பெயரை சேமிக்கும் உள்ளிணைந்த சிறப்பு மாறி எது?", o:["__name__", "__main__", "__file__", "__doc__"]}},
+    {a:1, en:{q:"MinGW stands for:", o:["Mini GNU for Windows", "Minimalist GNU for Windows", "Minor GNU for Windows", "Miniature GNU for Windows"]}, ta:{q:"MinGW என்பதன் விரிவாக்கம்:", o:["Mini GNU for Windows", "Minimalist GNU for Windows", "Minor GNU for Windows", "Miniature GNU for Windows"]}},
+    {a:3, en:{q:"SWIG stands for:", o:["Simple Wrapper Interface Generator", "System Wrapper Interface Generator", "Software Wrapper Interface Generator", "Simplified Wrapper Interface Generator"]}, ta:{q:"SWIG என்பதன் விரிவாக்கம்:", o:["Simple Wrapper Interface Generator", "System Wrapper Interface Generator", "Software Wrapper Interface Generator", "Simplified Wrapper Interface Generator"]}}
+  ]
+},
+{
+  en:"15. Data Manipulation through SQL", ta:"பாடம் 15 - மூலம் தரவுகளைக் கையாளுதல்",
+  q:[
+    {a:3, en:{q:"Which function returns the number of rows matching query criteria?", o:["SUM()", "AVG()", "MAX()", "COUNT()"]}, ta:{q:"வினவல் நிபந்தனைக்கு பொருந்தும் வரிசைகளின் எண்ணிக்கையைத் தரும் aggregate செயற்கூறு:", o:["SUM()", "AVG()", "MAX()", "COUNT()"]}},
+    {a:2, en:{q:"Which method of cursor object executes SQL queries?", o:["run", "open", "execute", "select"]}, ta:{q:"கர்சர் பொருளின் எந்த முறை SQL வினவல்களை இயக்குகிறது?", o:["run", "open", "execute", "select"]}},
+    {a:2, en:{q:"Which placeholder symbols are used for parameterized queries in SQLite?", o:["$ and @", "% and #", "? and :name", "& and *"]}, ta:{q:"பைத்தான் SQLite-ல் அளவுரு வினவல்களுக்கு பயன்படும் குறியீடுகள் எவை?", o:["$ மற்றும் @", "% மற்றும் #", "? மற்றும் :name", "& மற்றும் *"]}}
+  ]
+},
+{
+  en:"16. Data Visualization using Python", ta:"பாடம் 16 - தரவு காட்சிப்படுத்துதல் (Line, Pie, Bar Chart)",
+  q:[
+    {a:1, en:{q:"Which function is used to display the created plot window?", o:["plt.plot()", "plt.show()", "plt.display()", "plt.view()"]}, ta:{q:"உருவாக்கப்பட்ட வரைபட சாளரத்தைக் காண்பிக்கப் பயன்படும் செயற்கூறு எது?", o:["plt.plot()", "plt.show()", "plt.display()", "plt.view()"]}},
+    {a:3, en:{q:"Which function is used to draw a pie chart in pyplot?", o:["plt.circle()", "plt.round()", "plt.piechart()", "plt.pie()"]}, ta:{q:"பைத்தானில் வட்ட வரைபடம் (Pie Chart) வரையப் பயன்படும் செயற்கூறு எது?", o:["plt.circle()", "plt.round()", "plt.piechart()", "plt.pie()"]}},
+    {a:2, en:{q:"Which plot shows data as a collection of individual points?", o:["Bar plot", "Line plot", "Scatter plot", "Area plot"]}, ta:{q:"தரவுகளை தனித்தனி புள்ளிகளாகக் காட்டும் வரைபடம் எது?", o:["பட்டை வரைபடம்", "கோட்டு வரைபடம்", "சிதறல் வரைபடம் (Scatter plot)", "பரப்பு வரைபடம்"]}},
+    {a:1, en:{q:"What is an Infographic?", o:["Numerical table", "Visual representation of information, data, or knowledge", "Database record", "Text document"]}, ta:{q:"தகவல் வரைபடம் (Infographic) என்றால் என்ன?", o:["எண் அட்டவணை", "தகவல், தரவு அல்லது அறிவின் வரைகலை காட்சி", "தரவுதள பதிவு", "உரை ஆவணம்"]}}
+  ]
+},
+];
+
+
+/* Extra chapter-wise previous-year + additional 1-mark MCQs for 12th Computer
+   Science, transcribed from a Tamil-medium exam guide (12CS_TM_2025). These
+   are appended onto CH_ADD's existing questions per chapter (same 16-chapter
+   order), extending both mediums since each entry carries en{} + ta{}. */
+const CH_ADD_TM_EXTRA = [
+  [
+    {a:0, en:{q:"The small part of a program's code used to perform a specific action is called:", o:["Sub programs", "Files", "Pseudo code", "Modules"]}, ta:{q:"ஒரு குறிப்பிட்ட செயலைச் செய்வதற்காகப் பயன்படுத்தப்படும் குறிமுறைகளின் சிறிய பகுதியே எது?", o:["துணை நிரல்கள்", "கோப்புகள்", "Pseudo குறிமுறை", "தொகுதிகள்"]}},
+    {a:1, en:{q:"Which of the following units is defined within a larger program structure?", o:["Sub programs", "Function", "Files", "Modules"]}, ta:{q:"பின்வரும் எந்த அலகு ஒரு பெரிய குறிமுறை கட்டமைப்பில் வரையறுக்கப்பட்டுள்ளது?", o:["துணை நிரல்கள்", "செயற்கூறு", "கோப்புகள்", "தொகுதிகள்"]}},
+    {a:2, en:{q:"Which of the following has its own unique syntax block?", o:["Sub programs", "Function", "Definition", "Modules"]}, ta:{q:"பின்வரும் எது தனித்தன்மையான தொடரியல் தொகுதிகளை கொண்டதாகும்?", o:["துணை நிரல்கள்", "செயற்கூறு", "வரையறை", "தொகுதிகள்"]}},
+    {a:1, en:{q:"What are the variables inside a function definition called?", o:["Sub programs", "Parameters", "Function", "Argument"]}, ta:{q:"செயற்கூறு வரையறையில் உள்ள மாறிகள் எவ்வாறு அழைக்கப்படுகிறது?", o:["துணை நிரல்கள்", "அளபுருக்கள்", "செயற்கூறு", "செயலுருபு"]}},
+    {a:0, en:{q:"What are the values passed to a function definition called?", o:["Arguments", "Sub programs", "Function", "Definition"]}, ta:{q:"செயற்கூறு வரையறைக்கு அனுப்பப்படும் மதிப்புகள் எவ்வாறு அழைக்கப்படுகிறது?", o:["செயலுருகள்", "துணை நிரல்கள்", "செயற்கூறு", "வரையறை"]}},
+    {a:1, en:{q:"Which of these is mandatory while writing a type hint?", o:["{ }", "( )", "[ ]", "< >"]}, ta:{q:"தரவு வகை குறிப்பு எழுதும்போது, எது கட்டாயமாகிறது?", o:["{ }", "( )", "[ ]", "< >"]}},
+    {a:2, en:{q:"Which of the following determines what an object should do?", o:["Operating system", "Interpreter", "Interface", "Compiler"]}, ta:{q:"பின்வரும் எது ஒரு பொருள் செய்ய வேண்டியதைத் தீர்மானிக்கிறது?", o:["இயக்க அமைப்பு", "நிரல் பெயர்ப்பி", "இடைமுகம்", "தொகுப்பான்"]}},
+    {a:2, en:{q:"Which of the following executes the commands defined in an interface?", o:["Operating system", "Interpreter", "Implementation", "Compiler"]}, ta:{q:"பின்வரும் எது இடைமுகத்தின் வரையறுக்கப்பட்ட கட்டளைகளை நிறைவேற்றுகிறது?", o:["இயக்க அமைப்பு", "நிரல் பெயர்ப்பி", "செயல்படுத்துதல்", "தொகுப்பான்"]}},
+    {a:3, en:{q:"A function that always returns the correct result when the same arguments are passed to it is called:", o:["Impure function", "Partial function", "Dynamic function", "Pure function"]}, ta:{q:"ஒரே மாதிரியான அதே அளபுருக்களை செயற்கூறுவிற்கு அனுப்பினால் சரியான விடையைத் தரும் செயற்கூறு எவ்வாறு அழைக்கப்படுகிறது?", o:["Impure செயற்கூறு", "Partial செயற்கூறு", "Dynamic செயற்கூறு", "Pure செயற்கூறு"]}},
+    {a:0, en:{q:"A function that causes side effects when passing arguments is called:", o:["Impure function", "Partial function", "Dynamic function", "Pure function"]}, ta:{q:"அளபுருக்களை அனுப்பும் போது பக்க விளைவுகளை ஏற்படுத்தும் செயற்கூறு எவ்வாறு அழைக்கப்படும்?", o:["Impure செயற்கூறு", "Partial செயற்கூறு", "Dynamic செயற்கூறு", "Pure செயற்கூறு"]}}
+  ],
+  [
+    {a:0, en:{q:"Which function is used to build a data abstraction data type?", o:["Constructors", "Destructors", "recursive", "Nested"]}, ta:{q:"பின்வரும் எந்த செயற்கூறு தரவு வகையை உருவமைக்கப் பயன்படுகிறது?", o:["Constructors", "Destructors", "recursive", "Nested"]}},
+    {a:1, en:{q:"Which function retrieves information from a data type?", o:["Constructors", "Selectors", "recursive", "Nested"]}, ta:{q:"பின்வரும் எந்த செயற்கூறு தரவு வகையில் இருந்து தகவல்களை மீட்டெடுக்கும்?", o:["Constructors", "Selectors", "recursive", "Nested"]}},
+    {a:1, en:{q:"Which data structure holds ordered items that can be changed?", o:["Built in", "List", "Tuple", "Derived data"]}, ta:{q:"வரிசைப்படுத்தப்பட்ட உருப்படிகளை மாற்றக்கூடிய தரவு கட்டமைப்பு எது?", o:["Built in", "List", "Tuple", "Derived data"]}},
+    {a:2, en:{q:"An ordered sequence of objects that cannot be changed is:", o:["Built in", "List", "Tuple", "Derived data"]}, ta:{q:"மாற்றம் செய்ய முடியாத பொருள்களின் தொடர் வரிசை எது?", o:["Built in", "List", "Tuple", "Derived data"]}},
+    {a:2, en:{q:"A data type whose implementation is known is called:", o:["Built in datatype", "Derived datatype", "Concrete datatype", "Abstract datatype"]}, ta:{q:"செயலாக்கம் அறியப்பட்ட தரவு வகை எவ்வாறு அழைக்கப்படுகிறது?", o:["Built in datatype", "Derived datatype", "Concrete datatype", "Abstract datatype"]}},
+    {a:3, en:{q:"A data type whose implementation is unknown is called:", o:["Built in datatype", "Derived datatype", "Concrete datatype", "Abstract datatype"]}, ta:{q:"செயலாக்கம் அறியப்படாத தரவு வகை எவ்வாறு அழைக்கப்படுகிறது?", o:["Built in datatype", "Derived datatype", "Concrete datatype", "Abstract datatype"]}},
+    {a:0, en:{q:"Which of the following is a combination structure?", o:["Pair", "Triplet", "Single", "quadrat"]}, ta:{q:"பின்வருவனற்றில் எது கலவை அமைப்பு?", o:["Pair", "Triplet", "Single", "quadrat"]}},
+    {a:0, en:{q:"Combining two values together is considered as which type?", o:["Pair", "Triplet", "Single", "quadrat"]}, ta:{q:"இரு மதிப்புகளை ஒன்றாக பிணைப்பது எந்த வகையாக கருதப்படுகிறது?", o:["Pair", "Triplet", "Single", "quadrat"]}},
+    {a:2, en:{q:"Which of the following allows naming different parts of a multi-part object?", o:["Tuples", "Lists", "Classes", "quadrats"]}, ta:{q:"பின்வருவனற்றில் எது பல் உருப்பு பொருளின் பல்வேறு பகுதிகளை பெயரிட அனுமதிக்கிறது?", o:["Tuples", "Lists", "Classes", "quadrats"]}},
+    {a:1, en:{q:"Which of the following is created by enclosing elements in square brackets?", o:["Tuples", "Lists", "classes", "quadrats"]}, ta:{q:"பின்வருவனற்றில் எது கோவைகளை சதுர அடைப்புக்குறிக்குள் வைத்து உருவமைக்கிறது?", o:["Tuples", "Lists", "classes", "quadrats"]}}
+  ],
+  [
+    {a:0, en:{q:"Which of the following refers to the accessibility of one part of a program from another part?", o:["Scope", "Memory", "Address", "Access method"]}, ta:{q:"பின்வருவனவற்றுள் எது நிரலின் ஒரு பகுதியின் அணுகியல்பை மற்றொரு பகுதிக்கு குறிப்பதாகும்?", o:["வரையெல்லை", "நினைவகம்", "முகவரி", "அணுகுமுறை"]}},
+    {a:1, en:{q:"The process of binding a variable's name to an object is called:", o:["Scope", "Mapping", "Post-binding", "Pre-binding"]}, ta:{q:"மாறியின் பெயரை ஒரு பொருளுடன் பிணைக்கும் செயல்முறையை என்னவென்று அழைக்கப்படும்?", o:["வரையெல்லை", "மேப்பிங்", "பின் பிணைத்தல்", "முன் பிணைத்தல்"]}},
+    {a:1, en:{q:"Which of the following is used in a programming language to map a variable to an object?", o:["::", ":=", "=", "=="]}, ta:{q:"பின்வருவனவற்றுள் எது நிரலாக்க மொழியில் மாறியையும் பொருளையும் மேப் செய்யப் பயன்படுகிறது?", o:["::", ":=", "=", "=="]}},
+    {a:3, en:{q:"What provides the space for mapping a variable to its object?", o:["Scope", "Mapping", "Binding", "Namespaces"]}, ta:{q:"எது மாறியை பொருளுடன் மேப்பிங் செய்யவதற்கு இடம் அளிக்கும்?", o:["வரையெல்லை", "மேப்பிங்", "பிணைத்தல்", "Namespaces"]}},
+    {a:0, en:{q:"Which scope refers to variables defined within the current function?", o:["Local scope", "Global scope", "Module scope", "Function scope"]}, ta:{q:"எந்த வரையெல்லை நடப்பு செயற்கூறில் வரையறுக்கப்படும் மாறிகளை குறிக்கும்?", o:["உள்ளமை வரையெல்லை", "முழுதளாவிய வரையெல்லை", "தொகுதி வரையெல்லை", "செயற்கூறு வரையெல்லை"]}},
+    {a:1, en:{q:"The process of dividing a computer program into multiple sub-programs is called:", o:["Procedural programming", "Modular programming", "Runtime programming", "Object-oriented programming"]}, ta:{q:"ஒரு கணிப்பொறி நிரலை பல துணை நிரல்களாக பிரிக்கும் செயல்முறையே என்னவென்று அழைக்கப்படும்?", o:["செயல்முறை நிரலாக்கம்", "தொகுதி நிரலாக்கம்", "நிகழ் இயக்க நிரலாக்கம்", "பொருள் நோக்கு நிரலாக்கம்"]}},
+    {a:2, en:{q:"Which security technology defines who can view and use resources in a computing environment?", o:["Password", "Authorization", "Access control", "Certificate"]}, ta:{q:"கணினி சூழலில் உள்ள வளங்களை யார் பார்வையிட மற்றும் பயன்படுத்த முடியும் என்பதை வரையறுக்கும் பாதுகாப்பு தொழில்நுட்பம் எது?", o:["கடவுச்சொல்", "அங்கீகாரம்", "அணுகல் கட்டுப்பாடு", "சான்றிதழ்"]}},
+    {a:3, en:{q:"Members of which class can be accessed only within the class itself?", o:["public members", "protected members", "secured members", "private members"]}, ta:{q:"எந்த இனக்குழுவின் உறுப்புகளை இனக்குழுவின் உள்ளே மட்டுமே கையாள முடியும்?", o:["public உறுப்புகள்", "protected உறுப்புகள்", "secured உறுப்புகள்", "private உறுப்புகள்"]}},
+    {a:0, en:{q:"Which members can be accessed even from outside the class?", o:["public members", "protected members", "secured members", "private members"]}, ta:{q:"எந்த உறுப்புகளை இனக்குழுவிற்கு வெளியே இருந்தும் அணுக முடியும்?", o:["public உறுப்புகள்", "protected உறுப்புகள்", "secured உறுப்புகள்", "private உறுப்புகள்"]}},
+    {a:2, en:{q:"Which members can be accessed by the defining class and its subclasses?", o:["public members", "secured members", "protected members", "private members"]}, ta:{q:"எந்த வரையறுக்கப்பட்ட இனக்குழு மற்றும் அதன் துணை இனக்குழுக்களால் அணுகப்படும் உறுப்புகளாகும்?", o:["public உறுப்புகள்", "secured உறுப்புகள்", "protected உறுப்புகள்", "private உறுப்புகள்"]}}
+  ],
+  [
+    {a:2, en:{q:"Which term originated from the name of the Persian mathematician Abu Ja'far Muhammad Ibn Musa Al-Khwarizmi?", o:["Flowchart", "Flow", "Algorithm", "Syntax"]}, ta:{q:"எந்த சொல் பெர்ஷிய கணிதமேதை அபு ஜாஃபர் முகமது இபின்-ஐமூசா அல் கௌவாரிஸ்மி பெயரில் இருந்து வந்தது?", o:["Flowchart", "Flow", "Algorithm", "Syntax"]}},
+    {a:3, en:{q:"Among the following sorting algorithms, which one requires the least number of swaps?", o:["Bubble", "Quick", "Merge", "Selection"]}, ta:{q:"பின்வரும் வரிசையாக்க நெறிமுறைகளில், எது குறைந்த எண்ணிக்கையிலான இடமாற்றம் தேவைப்படும்?", o:["குமிழி", "விரைவு", "ஒன்றிணைந்த", "தேர்ந்தெடுப்பு"]}},
+    {a:2, en:{q:"What are the two main measures used to evaluate an algorithm's performance?", o:["Processor and memory", "Complexity and capacity", "Time and space", "Data and space"]}, ta:{q:"நெறிமுறையின் செயல்திறனை அளவிட இரண்டு முக்கிய அளவீடுகள் யாவை?", o:["செயலி மற்றும் நினைவகம்", "சிக்கல் மற்றும் கொள்ளளவு", "நேரம் மற்றும் இடம்", "தரவு மற்றும் இடம்"]}},
+    {a:0, en:{q:"An algorithm that gives the expected output for a valid input is called:", o:["Algorithmic solution", "Algorithmic output", "Algorithmic problem", "Algorithmic code"]}, ta:{q:"செல்லுபடியாகும் உள்ளீட்டுக்கு எதிர்பார்க்கப்படும் வெளியீட்டைத் தரும் நெறிமுறை இவ்வாறு அழைக்கப்படுகிறது?", o:["நெறிமுறையசார் தீர்வு", "நெறிமுறையசார் வெளியீடு", "நெறிமுறையசார் சிக்கல்", "நெறிமுறையசார் குறிமுறை"]}},
+    {a:3, en:{q:"Which of the following is used to indicate the worst case in an algorithm?", o:["Big A", "Big S", "Big W", "Big O"]}, ta:{q:"ஒரு நெறிமுறையில் மிகமோசமான நிலையை குறிக்க பின்வரும் எது பயன்படுகிறது?", o:["Big A", "Big S", "Big W", "Big O"]}},
+    {a:0, en:{q:"The opposite term of Big Ω is:", o:["Big O", "Big θ", "Big A", "Big S"]}, ta:{q:"Big Ω இதன் எதிர் பதமானது எது?", o:["Big O", "Big θ", "Big A", "Big S"]}},
+    {a:2, en:{q:"Binary search is also called:", o:["Sequential search", "Linear search", "Interval search", "Non-sequential search"]}, ta:{q:"இருமத் தேடல் இவ்வாறு அழைக்கப்படும்.", o:["வரிசைமுறைத் தேடல்", "தொடர் தேடல்", "இடைவெளித் தேடல்", "தொடரற்ற தேடல்"]}},
+    {a:1, en:{q:"What does the notation θ represent in asymptotic notation?", o:["Best case", "Average case", "Worst case", "NULL case"]}, ta:{q:"θ என்ற குறியீடு asymptotic மதிப்பீட்டில் எதைக் குறிக்கிறது?", o:["அடிப்படை நிலை", "மிதமான நிலை", "மோசமான நிலை", "NULL நிலை"]}},
+    {a:0, en:{q:"If a problem is divided into sub-problems that get reused multiple times, what property does it have?", o:["Overlapping sub-problems", "Optimal substructure", "Memoization", "Greedy"]}, ta:{q:"ஒரு சிக்கல் துணைச் சிக்கல்களாக பிரிந்து அதனை பல முறை பயன்படுத்தினால், அந்த சிக்கல் எந்த பண்பை பெறும்?", o:["ஒன்றோடு ஒன்று இணைந்த துணைச்சிக்கல்", "உகந்த துணை கட்டமைப்பு", "நினைவிருத்தல்", "பொறாமை"]}},
+    {a:2, en:{q:"In dynamic programming, the technique of storing already computed values is called:", o:["Value-storing property", "Value-collecting property", "Memoization", "Stacking"]}, ta:{q:"இயங்கு நிரலாக்கத்தில், ஏற்கனவே கணக்கீடு செய்த மதிப்புகளை சேமிக்கும் யுக்தியை இவ்வாறு அழைக்கலாம்.", o:["மதிப்பை சேமிக்கும் பண்பு", "மதிப்பை சேகரிக்கும் பண்பு", "நினைவிருத்தல்", "படிமிடல்"]}}
+  ],
+  [
+    {a:1, en:{q:"Who created Python?", o:["Ritchie", "Guido van Rossum", "Bill Gates", "Sundar Pichai"]}, ta:{q:"பைத்தானை உருவாக்கியவர் யார்?", o:["ரிட்ஸ்", "கைடோ வான் ரோஸும்", "பில் கேட்ஸ்", "சுந்தர் பிச்சை"]}},
+    {a:0, en:{q:"Which of these symbols indicates that the interpreter is ready to accept commands?", o:[">>>", "<<<", "#", "<<"]}, ta:{q:"இவற்றுள் எந்த குறியீடு நிரல் பெயர்ப்பி கட்டளைகளை ஏற்றுக் கொள்ள தயார் நிலையில் இருப்பதைக் குறிக்கிறது?", o:[">>>", "<<<", "#", "<<"]}},
+    {a:3, en:{q:"Which key combination is used to create a new Python file?", o:["Ctrl+C", "Ctrl+F", "Ctrl+B", "Ctrl+N"]}, ta:{q:"பின்வரும் எந்த சாவி சேர்மானம் ஓர் புதிய பைத்தான் நிரலை உருவாக்கப் பயன்படுகிறது?", o:["Ctrl+C", "Ctrl+F", "Ctrl+B", "Ctrl+N"]}},
+    {a:0, en:{q:"Which symbol is used to insert comments in a Python program?", o:["#", "&", "@", "$"]}, ta:{q:"பின்வரும் எந்த குறியுரு பைத்தான் நிரலில் குறிப்புகளை உள்ளீடு செய்ய பயன்படுகிறது?", o:["#", "&", "@", "$"]}},
+    {a:2, en:{q:"Which symbol prints more than one item on a single line?", o:["Semicolon", "Tab", "Comma", "Colon"]}, ta:{q:"எந்த குறி ஒன்றுக்கு மேற்பட்ட உறுப்புகளை ஒற்றை வரியில் அச்சிடும்?", o:["அரைப்புள்ளி", "டாபர்", "காற்புள்ளி", "முக்காற்புள்ளி"]}},
+    {a:0, en:{q:"Which of the following does not have tokens?", o:["Interpreter", "Identifiers", "Keywords", "Operators"]}, ta:{q:"பின்வரும் எதற்கு வில்லைகள் (tokens) கிடையாது?", o:["நிரல்பெயர்ப்பி", "குறிப்பெயர்கள்", "சிறப்புச்சொற்கள்", "செயற்குறிகள்"]}},
+    {a:3, en:{q:"Which of the following is not a keyword in Python?", o:["break", "while", "continue", "operators"]}, ta:{q:"பின்வருவனவற்றில் எது பைத்தான் நிரலில் சிறப்புச் சொல் கிடையாது?", o:["break", "while", "continue", "operators"]}},
+    {a:1, en:{q:"Which operator is called a comparison operator?", o:["Arithmetic", "Relational", "Logical", "Assignment"]}, ta:{q:"எந்த செயற்குறியை ஒப்பீடு செயற்குறி என்று அழைக்கப்படுகிறது?", o:["கணக்கீடு", "தொடர்புடைய", "தருக்க", "மதிப்பிருத்தல்"]}},
+    {a:3, en:{q:"Which of the following is not a logical operator?", o:["and", "or", "not", "like"]}, ta:{q:"பின்வருவனவற்றில் எது தருக்க செயற்குறி கிடையாது?", o:["and", "or", "not", "like"]}},
+    {a:0, en:{q:"Which operator is called a ternary operator?", o:["Ternary operator", "Relational operator", "Logical operator", "Assignment operator"]}, ta:{q:"எந்த செயற்குறியை நிந்தனை செயற்குறி (Ternary) என்று அழைக்கப்படுகிறது?", o:["மும்ம செயற்குறி", "தொடர்புடைய", "தருக்க", "மதிப்பிருத்தல்"]}}
+  ],
+  [
+    {a:0, en:{q:"How many main control structures are there in Python?", o:["3", "4", "5", "6"]}, ta:{q:"பைத்தானில் எத்தனை முக்கியமான கட்டுப்பாடு கட்டமைப்புகள் உள்ளன?", o:["3", "4", "5", "6"]}},
+    {a:2, en:{q:"What is the expansion of elif?", o:["nested if", "if...else", "else if", "if...elif"]}, ta:{q:"elif என்பதன் விரிவாக்கம் என்ன?", o:["nested if", "if...else", "else if", "if...elif"]}},
+    {a:3, en:{q:"What plays a major role in a Python program?", o:["Statements", "Control", "Structure", "Indentation"]}, ta:{q:"பைத்தான் நிரலில் எது முக்கிய பங்கு வகிக்கிறது?", o:["கூற்றுகள்", "கட்டுப்பாடு", "அமைப்பு", "உள்தள்ளல்"]}},
+    {a:2, en:{q:"Which statement is commonly used as a placeholder?", o:["continue", "break", "pass", "goto"]}, ta:{q:"எந்த கூற்று பொதுவாக இட நிரப்பியாக பயன்படுகிறது?", o:["continue", "break", "pass", "goto"]}},
+    {a:2, en:{q:"The condition of an if statement must be in which of the following forms?", o:["Arithmetic or relational expressions", "Arithmetic or logical expressions", "Relational or logical expressions", "Arithmetic expressions"]}, ta:{q:"if கூற்றின் நிபந்தனை பின்வரும் எந்த வடிவில் இருக்க வேண்டும்?", o:["கணித அல்லது ஒப்பீட்டு கோவைகள்", "கணித அல்லது தருக்கக் கோவைகள்", "ஒப்பீட்டு அல்லது தருக்கக் கோவைகள்", "கணித கோவைகள்"]}},
+    {a:2, en:{q:"Which of the following is a definite loop?", o:["do...while", "while", "for", "if...elif"]}, ta:{q:"பின்வரும் எது வரையறுக்கப்பட்ட மடக்கு (definite loop) ஆகும்?", o:["do...while", "while", "for", "if...elif"]}},
+    {a:0, en:{q:"i=1\nwhile True:\n    if i%3==0:\n        break\n    print(i,end='')\n    i+=1\nWhat is the output of the above code?", o:["12", "123", "1234", "124"]}, ta:{q:"i=1\nwhile True:\n    if i%3==0:\n        break\n    print(i,end='')\n    i+=1\nமேலுள்ள நிரலின் வெளியீடு என்ன?", o:["12", "123", "1234", "124"]}},
+    {a:2, en:{q:"T=1\nwhile T:\n    print(True)\n    break\nWhat is the output of the above code?", o:["False", "0", "True", "No output"]}, ta:{q:"T=1\nwhile T:\n    print(True)\n    break\nமேலுள்ள நிரலின் வெளியீடு என்ன?", o:["தவறு", "0", "சரி", "வெளியீடு இல்லை"]}},
+    {a:0, en:{q:"Which of the following is not a jump statement?", o:["for", "goto", "continue", "break"]}, ta:{q:"பின்வருவனவற்றில் எது தாவல் கூற்று (jump statement) கிடையாது?", o:["for", "goto", "continue", "break"]}},
+    {a:1, en:{q:"if <condition> __\n    statements-block1\nelse:\n    statements-block2\nWhich punctuation mark should appear in the blank space?", o:[";", ":", "::", "!"]}, ta:{q:"if <condition> __\n    statements-block1\nelse:\n    statements-block2\nஎந்த நிறுத்தற்குறி காலியிடத்தில் இடம் பெற வேண்டும்?", o:[";", ":", "::", "!"]}}
+  ],
+  [
+    {a:2, en:{q:"A named block of code designed to perform a specific action is:", o:["Loop", "Branching", "Function", "Module"]}, ta:{q:"ஒரு குறிப்பிட்ட செயலைச் செய்வதற்காக வடிவமைக்கப்பட்டு, பெயரிடப்பட்ட குறிமுறையின் தொகுதி எது?", o:["மடக்கு", "கிளைப்பிரிப்பு", "செயற்கூறு", "தொகுதி"]}},
+    {a:1, en:{q:"A function that calls itself is called:", o:["Nested", "Recursive", "Lambda", "return statement"]}, ta:{q:"தன்னைத்தானே அழைத்துக் கொள்ளும் செயற்கூறை இவ்வாறு அழைப்பர்.", o:["உள்ளிணைந்த", "தற்சுழற்சி", "லாம்டா", "return கூற்று"]}},
+    {a:0, en:{q:"Which function is called an anonymous function?", o:["Lambda", "def", "Function", "Definition"]}, ta:{q:"எந்த செயற்கூறை பெயரில்லா செயற்கூறு என்று அழைக்கப்படுகிறது?", o:["லாம்டா", "def", "செயற்கூறு", "வரையறை"]}},
+    {a:3, en:{q:"Which keyword starts a function block?", o:["define", "for", "finally", "def"]}, ta:{q:"செயற்கூறு தொகுதியை எந்த சிறப்புச்சொல் தொடங்கி வைக்கிறது?", o:["define", "for", "finally", "def"]}},
+    {a:1, en:{q:"Which keyword ends a function block, returning its result?", o:["define", "return", "finally", "def"]}, ta:{q:"எந்த சிறப்புச்சொல் செயற்கூறு தொகுதியை முடித்து வைக்கிறது?", o:["define", "return", "finally", "def"]}},
+    {a:2, en:{q:"Which symbol is used in a function definition?", o:["; (semicolon)", "- (hyphen)", ": (colon)", "$ (dollar)"]}, ta:{q:"செயற்கூறு வரையறையில் பின்வரும் எந்த குறியீடு பயன்படுத்தப்படுகிறது?", o:["; (அரைப்புள்ளி)", "- (இணைக்குறி)", ": (முக்காற்புள்ளி)", "$ (டாலர்)"]}},
+    {a:0, en:{q:"Which type of argument must be passed to a function in the correct positional order?", o:["Required", "Keyword", "Default", "Variable-length"]}, ta:{q:"செயற்கூறுக்கு எந்த வகை செயலுருபுகளை சரியான இட வரிசையில் அனுப்ப வேண்டும்?", o:["தேவைப்படும் (Required)", "சிறப்புச்சொல் (Keyword)", "தானமைவு (Default)", "மாறி நீளம் (Variable-length)"]}},
+    {a:0, en:{q:"Read the following statements and choose the correct one. (i) In Python, specific data types need not be specified when defining a function. (ii) Python keywords can be used as function names.", o:["I true and II false", "Both true", "I false and II true", "Both false"]}, ta:{q:"பின்வரும் கூற்றுகளைப் படித்து, சரியான கூற்றுகளைத் தேர்ந்தெடுக்கவும். (i) பைத்தானில், செயற்கூறை வரையறுக்கும் போது குறிப்பிட்ட தரவு வகைகளைக் குறிப்பிட தேவையில்லை. (ii) பைத்தான் சிறப்புச் சொற்களைச் செயற்கூறின் பெயராகப் பயன்படுத்தலாம்.", o:["I சரி மற்றும் II தவறு", "இரண்டுமே சரி", "I தவறு மற்றும் II சரி", "இரண்டுமே தவறு"]}},
+    {a:1, en:{q:"if __: print(x,\"is a leap year\")\nChoose the correct condition for the given statement to execute successfully.", o:["x%2==0", "x%4==0", "x/4==0", "x%4=0"]}, ta:{q:"if __: print(x,\"is a leap year\")\nகொடுக்கப்பட்ட கூற்று வெற்றிகரமாக நிறைவேற்றுவதற்கு பின்வருவனவற்றுள் சரியான ஒன்றைத் தேர்ந்தெடு.", o:["x%2==0", "x%4==0", "x/4==0", "x%4=0"]}},
+    {a:2, en:{q:"Which keyword is used to define a function?", o:["define", "return", "def", "while"]}, ta:{q:"செயற்கூறை வரையறுக்க பின்வரும் எந்த சிறப்புச்சொல் பயன்படுத்தப்படுகிறது?", o:["define", "return", "def", "while"]}}
+  ],
+  [
+    {a:3, en:{q:"str1=\"TamilNadu\"\nprint(str1[::-1])\nWhich of the following is the output for the given Python code?", o:["TamilNadu", "Tmlau", "udanlimaT", "udaNlimat"]}, ta:{q:"str1=\"TamilNadu\"\nprint(str1[::-1])\nபின்வருவனவற்றுள் எது இதற்கான வெளியீடாகும்?", o:["TamilNadu", "Tmlau", "udanlimaT", "udaNlimat"]}},
+    {a:2, en:{q:"str1=\"Chennai Schools\"\nstr1[7]=\"-\"\nWhat is the output for the following code?", o:["Chennai-Schools", "Chenna-School", "Type error", "Chennai"]}, ta:{q:"str1=\"Chennai Schools\"\nstr1[7]=\"-\"\nபின்வரும் குறிமுறைக்கான வெளியீடு யாது?", o:["Chennai-Schools", "Chenna-School", "Type error", "Chennai"]}},
+    {a:0, en:{q:"Which of the following is the operator used to concatenate strings?", o:["+", "&", "*", "="]}, ta:{q:"பின்வருவனவற்றுள் எது சரங்களை இணைக்க பயன்படும் செயற்குறியாகும்?", o:["+", "&", "*", "="]}},
+    {a:1, en:{q:"A string enclosed within triple quotes allows creating which of the following?", o:["Single line string", "Multi-line strings", "Two-line string", "More than one string"]}, ta:{q:"மூன்று மேற்கோள் குறிகளுக்குள் தரப்படும் சரமானது பின்வருவனவற்றுள் எதை உருவாக்க அனுமதிக்கும்?", o:["ஒரு வரி சரம்", "பல வரி சரங்கள்", "இரு வரி சரம்", "ஒன்றுக்கு மேற்பட்ட சரங்கள்"]}},
+    {a:1, en:{q:"In Python, strings are:", o:["Mutable", "Immutable", "Non-reciprocal", "Flexible"]}, ta:{q:"பைத்தானில் சரங்களானது:", o:["மாற்றக்கூடியது", "மாறாத்தன்மையுடையது", "பரஸ்பரதன்மையற்றது", "நெகிழ்வானது"]}},
+    {a:1, en:{q:"Which of the following is the operator used for slicing a string?", o:["{ }", "[ ]", "< >", "( )"]}, ta:{q:"பின்வருவனவற்றில் எது சரத்தினை துண்டாக்கும் (Slicing) செயற்குறியாகும்?", o:["{ }", "[ ]", "< >", "( )"]}},
+    {a:3, en:{q:"What does stride refer to?", o:["The subscript value of the slide operation", "The first parameter of the slice operation", "The second parameter of the slice operation", "The third parameter of the slice operation"]}, ta:{q:"stride என்பது பின்வருவனவற்றுள் எதைக் குறிக்கிறது?", o:["slide செயல்பாட்டின் கீழ்ஒட்டு மதிப்பாகும்", "slice செயற்பாட்டின் முதல் அளபுருவாகும்", "slice செயற்பாட்டின் இரண்டாவது அளபுருவாகும்", "slice செயற்பாட்டின் மூன்றாவது அளபுருவாகும்"]}},
+    {a:1, en:{q:"Among the following format specifiers, which one prints in exponential notation with uppercase E?", o:["%f", "%E", "%g", "%n"]}, ta:{q:"பின்வரும் வடிவமைப்பு குறியீடுகளுள் அடுக்கு குறியீட்டில் அச்சிட (உயர் எழுத்து E) எது பயன்படுகிறது?", o:["%f", "%E", "%g", "%n"]}},
+    {a:0, en:{q:"Which of the following is the replacement field notation used with the format() function?", o:["{ }", "< >", "++", "^^"]}, ta:{q:"பின்வருவனவற்றுள் எந்தக் குறியீடு format() செயற்கூறுடன் பயன்படும் பதிலீடு புலமாகும்?", o:["{ }", "< >", "++", "^^"]}},
+    {a:3, en:{q:"The subscript of a string can be:", o:["Positive numbers", "Negative numbers", "both (a) and (b)", "either (a) or (b)"]}, ta:{q:"சரத்தின் கீழ் ஒட்டானது:", o:["நேர்மறை எண்கள்", "எதிர்மறை எண்கள்", "(அ) மற்றும் (ஆ)", "(அ) அல்லது (ஆ)"]}}
+  ],
+  [
+    {a:3, en:{q:"Choose the one that does not belong to the group of data types.", o:["List", "Tuple", "Dictionary", "Loop"]}, ta:{q:"தரவினத் தொகுதியில் தொடர்பில்லாத ஒன்றைத் தேர்வு செய்க.", o:["List", "Tuple", "Dictionary", "Loop"]}},
+    {a:1, en:{q:"list1=[2,4,6,8,10]. What is the output of print(list1[-2])?", o:["10", "8", "4", "6"]}, ta:{q:"list1=[2,4,6,8,10] எனில், print(list1[-2]) ன் விடை என்ன?", o:["10", "8", "4", "6"]}},
+    {a:2, en:{q:"Which function is used to count the number of elements in a List?", o:["count()", "find()", "len()", "index()"]}, ta:{q:"பின்வரும் எந்த செயற்கூறு List-ல் உள்ள உறுப்புகளின் எண்ணிக்கையைக் கணக்கிட பயன்படுகிறது?", o:["count()", "find()", "len()", "index()"]}},
+    {a:2, en:{q:"List=[10,20,30,40,50]. What is the result after executing List[2]=35?", o:["[35,10,20,30,40,50]", "[10,20,30,40,50,35]", "[10,20,35,40,50]", "[10,35,30,40,50]"]}, ta:{q:"List=[10,20,30,40,50] எனில் List[2]=35 நிறைவேற்றப்பட்ட பின் List-ன் மதிப்பு என்ன?", o:["[35,10,20,30,40,50]", "[10,20,30,40,50,35]", "[10,20,35,40,50]", "[10,35,30,40,50]"]}},
+    {a:1, en:{q:"List=[17,23,41,10]. What is the result of List.append(32)?", o:["[32,17,23,41,10]", "[17,23,41,10,32]", "[10,17,23,32,41]", "[41,32,23,17,10]"]}, ta:{q:"List=[17,23,41,10] எனில் List.append(32) ன் விடை என்ன?", o:["[32,17,23,41,10]", "[17,23,41,10,32]", "[10,17,23,32,41]", "[41,32,23,17,10]"]}},
+    {a:2, en:{q:"Which Python function is used to add more than one element to an existing List?", o:["append()", "append_more()", "extend()", "more()"]}, ta:{q:"பின்வரும் எந்த பைத்தான் செயற்கூறு ஏற்கனவே உள்ள List-ல் ஒன்றுக்கும் மேற்பட்ட உறுப்புகளை சேர்க்கப் பயன்படுகிறது?", o:["append()", "append_more()", "extend()", "more()"]}},
+    {a:1, en:{q:"S=[x**2 for x in range(5)]\nprint(S)\nWhat is the output of the following Python code?", o:["[0,1,2,4,5]", "[0,1,4,9,16]", "[0,1,4,9,16,25]", "[1,4,9,16,25]"]}, ta:{q:"S=[x**2 for x in range(5)]\nprint(S)\nபின்வரும் பைத்தான் குறிமுறையின் விடை என்ன?", o:["[0,1,2,4,5]", "[0,1,4,9,16]", "[0,1,4,9,16,25]", "[1,4,9,16,25]"]}},
+    {a:2, en:{q:"What is the use of the type() function in Python?", o:["To create a Tuple", "To find the type of elements in a Tuple", "To find the data type of a Python object", "To create a list"]}, ta:{q:"பைத்தானில் type() செயற்குறியின் பயன் என்ன?", o:["Tuple உருவாக்க", "Tuple உள்ள உறுப்புகளின் வகையைக் கண்டறிய", "பைத்தான் பொருளின் தரவினத்தை கண்டறிய", "பட்டியலை உருவாக்க"]}},
+    {a:3, en:{q:"Which of the following statements is not correct?", o:["List can be modified", "Tuples cannot be modified", "Append() function is used to add one element", "Extend() function is used to add List elements into Tuples"]}, ta:{q:"பின்வரும் எந்த கூற்று சரியானது அல்ல?", o:["List மாற்றம் செய்யலாம்", "Tuples மாற்றம் செய்ய முடியாது", "Append() செயற்கூறு ஒரு உறுப்பை சேர்க்கப் பயன்படுகிறது", "Extend() செயற்கூறு List உறுப்புகளை Tuples-ல் சேர்க்க பயன்படுகிறது"]}},
+    {a:3, en:{q:"setA={3,6,9}, setB={1,3,9}. What is the output of print(setA|setB)?", o:["{3,6,9,1,3,9}", "{3,9}", "{1}", "{1,3,6,9}"]}, ta:{q:"setA={3,6,9}, setB={1,3,9} எனில், print(setA|setB) ன் வெளியீடு என்ன?", o:["{3,6,9,1,3,9}", "{3,9}", "{1}", "{1,3,6,9}"]}}
+  ],
+  [
+    {a:2, en:{q:"Which of the following are the main features of object-oriented programming?", o:["Constructor and Class", "Constructor and Object", "Class and Object", "Constructor and Declaration"]}, ta:{q:"பின்வருவனவற்றுள் எவை பொருள் நோக்கு நிரலாக்கத்தின் முக்கிய அம்சம் ஆகும்?", o:["ஆக்கி மற்றும் இனக்குழு", "ஆக்கி மற்றும் பொருள்", "இனக்குழு மற்றும் பொருள்", "ஆக்கி மற்றும் அறிவி"]}},
+    {a:2, en:{q:"Which is a function defined inside a class called?", o:["Function", "Component", "Method", "Section"]}, ta:{q:"இனக்குழுவின் உள்ளே வரையறுக்கப்படும் செயற்கூறு எது?", o:["செயற்கூறு", "கூறு", "வழிமுறை", "பிரிவு"]}},
+    {a:1, en:{q:"Class members are accessed using which operator?", o:["&", ".", "#", "%"]}, ta:{q:"இனக்குழு உறுப்புகள் எந்த செயற்குறியின் மூலம் அணுகப்படுகிறது?", o:["&", ".", "#", "%"]}},
+    {a:3, en:{q:"Which function is automatically invoked when an object is created?", o:["__object__()", "__del__()", "__func__()", "__init__()"]}, ta:{q:"பொருள் உருவாக்கப்படும் போது தானாகவே இயக்கப்படும் செயற்கூறு எது?", o:["__object__()", "__del__()", "__func__()", "__init__()"]}},
+    {a:0, en:{q:"What is the prefix of a private class variable?", o:["__", "&&", "##", "**"]}, ta:{q:"private இனக்குழு மாறியின் முன்னொட்டு எது?", o:["__", "&&", "##", "**"]}},
+    {a:3, en:{q:"Which of the following methods is used as a destructor?", o:["__init__()", "__dest__()", "__rem__()", "__del__()"]}, ta:{q:"பின்வரும் வழிமுறைகளில் எது அழிப்பியாகப் (destructor) பயன்படுத்தப்படுகிறது?", o:["__init__()", "__dest__()", "__rem__()", "__del__()"]}},
+    {a:2, en:{q:"Which of the following class declarations is correct?", o:["class class_name", "class class_name< >", "class class_name:", "class class_name[ ]"]}, ta:{q:"பின்வருவனவற்றுள் எந்த இனக்குழு அறிவிப்பு சரியானது?", o:["class class_name", "class class_name< >", "class class_name:", "class class_name[ ]"]}},
+    {a:1, en:{q:"class Student:\n    def __init__(self, name):\n        self.name=name\n        print(self.name)\nS=Student(\"Tamil\")\nWhat is the output of the following program?", o:["Error", "Tamil", "name", "self"]}, ta:{q:"class Student:\n    def __init__(self, name):\n        self.name=name\n        print(self.name)\nS=Student(\"Tamil\")\nபின்வரும் நிரலின் வெளியீடு என்ன?", o:["Error", "Tamil", "name", "self"]}},
+    {a:0, en:{q:"Which of the following is a private class variable?", o:["__num", "##num", "$$num", "&&num"]}, ta:{q:"பின்வருவனவற்றுள் எது private இனக்குழு மாறி?", o:["__num", "##num", "$$num", "&&num"]}},
+    {a:3, en:{q:"What is the process of creating an object called?", o:["Constructor", "Declaration", "Assignment", "Instantiation"]}, ta:{q:"பொருளை உருவாக்கும் செயல்முறை எது?", o:["ஆக்கி", "அறிவி", "மதிப்பிருத்தல்", "சான்றுருவாக்கல்"]}}
+  ],
+  [
+    {a:2, en:{q:"What is the expansion of DBMS?", o:["DataBase Management Symbol", "Database Managing System", "DataBase Management System", "DataBasic Management System"]}, ta:{q:"DBMS-ன் விரிவாக்கம் என்ன?", o:["DataBase Management Symbol", "Database Managing System", "DataBase Management System", "DataBasic Management System"]}},
+    {a:2, en:{q:"A table is also called:", o:["tuple", "attribute", "relation", "entity"]}, ta:{q:"ஒரு அட்டவணை என்பது", o:["வரிசை (tuple)", "பண்புக்கூறுகள் (attribute)", "உறவுகள் (relation)", "அமைப்பு (entity)"]}},
+    {a:2, en:{q:"Which database model represents a parent-child relationship?", o:["Relational", "Network", "Hierarchical", "Object"]}, ta:{q:"எந்த தரவுதள மாதிரி பெற்றோர்-குழந்தை உறவுநிலையைக் குறிப்பிடுகிறது?", o:["உறவுநிலை", "வலையமைப்பு", "படிநிலை", "பொருள்"]}},
+    {a:0, en:{q:"The relational data model was first proposed by whom?", o:["E F Codd", "E E Codd", "E F Cadd", "Edger Frank Cadd"]}, ta:{q:"உறவுநிலை தரவுதள மாதிரி முதலில் யாரால் முன்மொழியப்பட்டது?", o:["E F Codd", "E E Codd", "E F Cadd", "Edger Frank Cadd"]}},
+    {a:1, en:{q:"The hierarchical model represents which type of relationship?", o:["one to one", "one to many", "many to one", "many to many"]}, ta:{q:"படிநிலை மாதிரி எந்த வகை உறவுநிலையை குறிப்பிடுகிறது?", o:["ஒன்று ஒன்று", "ஒன்று பல", "பல ஒன்று", "பல பல"]}},
+    {a:2, en:{q:"Who is known as the father of the relational database?", o:["Chris Date", "Hugh Darwen", "Edgar Frank Codd", "Edger Frank Cadd"]}, ta:{q:"உறவுநிலை தரவுதளத்தின் தந்தை என அழைக்கப்படுபவர் யார்?", o:["Chris Date", "Hugh Darwen", "Edgar Frank Codd", "Edger Frank Cadd"]}},
+    {a:2, en:{q:"Which of the following is an RDBMS?", o:["Dbase", "Foxpro", "MS-Access", "MS-Excel"]}, ta:{q:"பின்வருவனவற்றுள் எது RDBMS?", o:["Dbase", "Foxpro", "MS-Access", "MS-Excel"]}},
+    {a:0, en:{q:"Which symbol is used for the SELECT operation in relational algebra?", o:["σ", "π", "χ", "Ω"]}, ta:{q:"SELECT கூற்றுக்கு பயன்படும் சின்னம் யாது?", o:["σ", "π", "χ", "Ω"]}},
+    {a:1, en:{q:"A tuple is:", o:["table", "row", "attribute", "field"]}, ta:{q:"ஒரு tuple என்பது", o:["table", "row", "attribute", "field"]}},
+    {a:0, en:{q:"Who first developed the ER model?", o:["Chen", "E F Codd", "Chend", "Chand"]}, ta:{q:"ER மாதிரியை முதலில் உருவாக்கியவர் யார்?", o:["Chen", "E F Codd", "Chend", "Chand"]}}
+  ],
+  [
+    {a:0, en:{q:"Which commands provide definitions for operations such as creating a table structure, deleting a relation, and altering a relation's schema design?", o:["DDL", "DML", "DCL", "DQL"]}, ta:{q:"எந்த கட்டளைகள் அட்டவணை வடிவமைப்பை உருவாக்குதல், உறவுநிலையை நீக்குதல் மற்றும் உறவுநிலை திட்ட வடிவமைப்பை மாற்றுதல் போன்ற செயல்பாடுகளுக்கான வரையறைகளை வழங்குகிறது?", o:["DDL", "DML", "DCL", "DQL"]}},
+    {a:3, en:{q:"Which command allows modifying the structure of a table?", o:["SELECT", "ORDER BY", "MODIFY", "ALTER"]}, ta:{q:"எந்த கட்டளை அட்டவணையின் வடிவமைப்பை மாற்றி அமைக்க அனுமதிக்கிறது?", o:["SELECT", "ORDER BY", "MODIFY", "ALTER"]}},
+    {a:0, en:{q:"Which command is used to delete a table?", o:["DROP", "DELETE", "DELETES ALL", "ALTER TABLE"]}, ta:{q:"அட்டவணையை நீக்க பயன்படுத்த வேண்டிய கட்டளை எது?", o:["DROP", "DELETE", "DELETES ALL", "ALTER TABLE"]}},
+    {a:0, en:{q:"Which is used to create queries?", o:["SELECT", "ORDER BY", "MODIFY", "ALTER"]}, ta:{q:"வினவல்களை (queries) உருவாக்க பயன்படுவது எது?", o:["SELECT", "ORDER BY", "MODIFY", "ALTER"]}},
+    {a:1, en:{q:"Which clause is used to arrange the data in a database in order?", o:["SORT BY", "ORDER BY", "GROUP BY", "SELECT"]}, ta:{q:"ஒரு தரவுதளத்தில் உள்ள தரவை வரிசையாக்க செய்ய பயன்படும் clause எது?", o:["SORT BY", "ORDER BY", "GROUP BY", "SELECT"]}}
+  ],
+  [
+    {a:0, en:{q:"The CSV file is also known as:", o:["Flat File", "3D File", "String File", "Random File"]}, ta:{q:"CSV கோப்பானது பின்வருவனவற்றுள் எவ்வாறு அழைக்கப்படுகிறது?", o:["Flat File", "3D File", "String File", "Random File"]}},
+    {a:3, en:{q:"What is the expansion of CRLF?", o:["Control Return and Line Feed", "Carriage Return and Form Feed", "Control Router and Line Feed", "Carriage Return and Line Feed"]}, ta:{q:"CRLF என்பதன் விரிவாக்கம் என்ன?", o:["Control Return and Line Feed", "Carriage Return and Form Feed", "Control Router and Line Feed", "Carriage Return and Line Feed"]}},
+    {a:2, en:{q:"Which module does Python provide to perform various operations on a CSV file?", o:["py", "xls", "csv", "os"]}, ta:{q:"பின்வருவனவற்றுள் எந்த தொகுப்பானது CSV கோப்பினில் பல்வேறு செயல்பாடுகளை செய்ய பைத்தானால் வழங்கப்பட்டுள்ளது?", o:["py", "xls", "csv", "os"]}},
+    {a:1, en:{q:"Which mode is used to handle non-text files such as images or executable files?", o:["Text", "Binary", "xls", "csv"]}, ta:{q:"உருவப்படம் அல்லது இயங்கு நிலைக் கோப்பு போன்ற உரை அல்லாத கோப்புகளை கையாள பின்வரும் எந்த முறைமையானது பயன்படுகிறது?", o:["உரை (Text)", "இருமநிலை (Binary)", "xls", "csv"]}},
+    {a:0, en:{q:"Which command is used to skip a row in a file?", o:["next()", "skip()", "omit()", "bounce()"]}, ta:{q:"கோப்பினில் ஒரு வரிசையை தவிர்க்க பயன்படும் கட்டளை எது?", o:["next()", "skip()", "omit()", "bounce()"]}},
+    {a:0, en:{q:"Which of the following is the line terminator provided by the writer() method of the csv module?", o:["Line Terminator", "Enter Key", "Form Feed", "Data Terminator"]}, ta:{q:"பின்வருவனவற்றுள் csv தொகுதியின் writer() முறையால் வழங்கப்படும் வரி முறிப்பான் (line terminator) எது?", o:["Line Terminator", "Enter Key", "Form Feed", "Data Terminator"]}},
+    {a:1, en:{q:"If \"city.csv\" contains chennai,mylapore and mumbai,andheri:\nimport csv\nd=csv.reader(open(\"C:\\\\PYPRG\\\\ch13\\\\city.csv\"))\nnext(d)\nfor row in d:\n    print(row)\nWhat is the output of the above code?", o:["chennai,mylapore", "mumbai,andheri", "chennai\nmumbai", "chennai,mylapore\nmumbai,andheri"]}, ta:{q:"\"city.csv\" கோப்பில் chennai,mylapore மற்றும் mumbai,andheri என்ற தரவு இருப்பின்:\nimport csv\nd=csv.reader(open(\"C:\\\\PYPRG\\\\ch13\\\\city.csv\"))\nnext(d)\nfor row in d:\n    print(row)\nமேலுள்ள நிரலின் வெளியீடு என்ன?", o:["chennai,mylapore", "mumbai,andheri", "chennai\nmumbai", "chennai,mylapore\nmumbai,andheri"]}},
+    {a:3, en:{q:"Which of the following creates an object to represent Dictionary data?", o:["listreader()", "reader()", "tuplereader()", "DictReader()"]}, ta:{q:"Dictionary தரவுகளை குறிக்க இவற்றுள் எது ஒரு பொருளை உருவாக்குகிறது?", o:["listreader()", "reader()", "tuplereader()", "DictReader()"]}},
+    {a:2, en:{q:"Making some changes to existing data in a file, or adding more data, is called:", o:["Updating", "Appending", "Modifying", "Editing"]}, ta:{q:"ஏற்கனவே உள்ள கோப்பில் உள்ள தரவுகளில் சில மாற்றங்கள் செய்வதும் அல்லது மேலும் தரவை சேர்ப்பதும் இவ்வாறு அழைக்கப்படும்.", o:["புதுப்பித்தல்", "இறுதியில் சேர்த்தல்", "மாற்றம் செய்தல்", "திருத்துதல்"]}},
+    {a:3, en:{q:"import csv\nD=[['Exam'],['Quarterly'],['Halfyearly']]\ncsv.register_dialect('M',lineterminator='\\n')\nwith open(\"C:\\\\pyprg\\\\ch13\\\\test.csv\",\"w\") as f:\n    wr=csv.writer(f,dialect='M')\n    wr.writerows(D)\nWhat data will be written into \"test.csv\" by the code above?", o:["Exam Quarterly Halfyearly (single line)", "Exam Quarterly Halfyearly (space separated)", "E Q H (single column)", "Exam,\nQuarterly,\nHalfyearly (each on its own line)"]}, ta:{q:"import csv\nD=[['Exam'],['Quarterly'],['Halfyearly']]\ncsv.register_dialect('M',lineterminator='\\n')\nwith open(\"C:\\\\pyprg\\\\ch13\\\\test.csv\",\"w\") as f:\n    wr=csv.writer(f,dialect='M')\n    wr.writerows(D)\n\"test.csv\" கோப்பில் மேலுள்ள நிரல் என்ன விவரத்தை எழுதும்?", o:["Exam Quarterly Halfyearly (ஒரே வரியில்)", "Exam Quarterly Halfyearly (இடைவெளியுடன்)", "E Q H (ஒரே நெடுவரிசை)", "Exam,\nQuarterly,\nHalfyearly (ஒவ்வொன்றும் தனி வரியில்)"]}}
+  ],
+  [
+    {a:3, en:{q:"Which of the following is not a scripting language?", o:["JavaScript", "PHP", "Perl", "HTML"]}, ta:{q:"பின்வருவனவற்றுள் எது Scripting மொழி அல்ல?", o:["ஜாவாஸ்கிரிப்ட்", "PHP", "பெர்ல்", "HTML"]}},
+    {a:0, en:{q:"Importing a C++ program into Python is called:", o:["wrapping", "downloading", "combining", "separating"]}, ta:{q:"பைத்தான் நிரலில் C++ நிரலை தருவித்தல் எவ்வாறு அழைக்கப்படுகிறது?", o:["wrapping செய்தல்", "பதிவிறக்கம் செய்தல்", "இணைத்தல்", "பிரித்தல்"]}},
+    {a:1, en:{q:"The expansion of API is:", o:["Application Programming Interpreter", "Application Programming Interface", "Application Performing Interface", "Application Programming Interlink"]}, ta:{q:"API-ன் விரிவாக்கம் என்ன?", o:["Application Programming Interpreter", "Application Programming Interface", "Application Performing Interface", "Application Programming Interlink"]}},
+    {a:3, en:{q:"Which framework is used to interface Python and C++ programs?", o:["Ctypes", "SWIG", "Cython", "Boost"]}, ta:{q:"பைத்தான் மற்றும் C++ நிரல்களை இடைமுகப்படுத்துவதற்கான கட்டமைப்பு எது?", o:["Ctypes", "SWIG", "Cython", "Boost"]}},
+    {a:2, en:{q:"Which of the following is a software design technique that lets you extract your code into separate components?", o:["Object-oriented programming", "low-level language programming", "component-based/modular programming", "procedure-oriented programming"]}, ta:{q:"பின்வருவனவற்றில் எது உங்கள் குறிமுறையை தனித்தனி பகுதிகளாக பிரித்தெடுக்கும் மென்பொருள் வடிவமைப்பு தொழில்நுட்பம்?", o:["பொருள்நோக்கு நிரலாக்கம்", "குறைந்த நிலை மொழி நிரலாக்கம்", "கூறுநிலை நிரலாக்கம்", "செயல்முறைநோக்கு நிரலாக்கம்"]}},
+    {a:0, en:{q:"Which module allows you to interact with the Windows operating system?", o:["OS module", "sys module", "csv module", "getopt module"]}, ta:{q:"நீங்கள் விண்டோஸ் இயக்க முறைமையுடன் தொடர்பு கொள்ள எந்த கூறுநிலையை (module) இது அனுமதிக்கிறது?", o:["OS கூறுநிலை", "sys கூறுநிலை", "csv கூறுநிலை", "getopt கூறுநிலை"]}},
+    {a:2, en:{q:"When splitting strings without error, getopt() returns an empty array to which variable?", o:["argv variable", "opt variable", "args variable", "ifile variable"]}, ta:{q:"சரங்களை பிழையின்றி பிரிக்கும் பொழுது, getopt() வெற்று அணியை திருப்பி அனுப்பும் மாறி எது?", o:["argv மாறி", "opt மாறி", "args மாறி", "ifile மாறி"]}},
+    {a:0, en:{q:"if __name__=='__main__':\n    main(sys.argv[1:])\nIdentify the name of the function in the given code segment.", o:["main(sys.argv[1:])", "__name__", "__main__", "argv"]}, ta:{q:"if __name__=='__main__':\n    main(sys.argv[1:])\nபின்வரும் நிரல் பகுதியில் உள்ள செயற்கூறின் பெயரை அடையாளம் காண்க.", o:["main(sys.argv[1:])", "__name__", "__main__", "argv"]}},
+    {a:3, en:{q:"Which of the following is used to process text, numbers, images, and scientific data?", o:["HTML", "C", "C++", "PYTHON"]}, ta:{q:"கீழ்க்கண்டவற்றுள் எது உரை, எண்கள், படங்கள் மற்றும் அறிவியல் சார்ந்த தரவுகளை செயலாக்கப் பயன்படும்?", o:["HTML", "C", "C++", "PYTHON"]}},
+    {a:2, en:{q:"What does __name__ contain?", o:["C++ filename", "main() name", "python filename", "os module name"]}, ta:{q:"__name__ இது எதனை கொண்டுள்ளது?", o:["C++ filename", "main() name", "python filename", "os module name"]}}
+  ],
+  [
+    {a:0, en:{q:"Which of the following is an integrated collection of data?", o:["Database", "DBMS", "Information", "Records"]}, ta:{q:"பின்வரும் எது ஒருங்கிணைக்கப்பட்ட தரவுகளின் தொகுப்பாகும்?", o:["தரவுத்தளம்", "DBMS", "தகவல்", "பதிவுகள்"]}},
+    {a:1, en:{q:"Which type of database system does SQLite belong to?", o:["Single-file database", "Relational database", "Hierarchical database", "Object-oriented database"]}, ta:{q:"SQLite எந்த தரவுதள அமைப்பைச் சேர்ந்தது?", o:["ஒற்றைக் கோப்பு தரவுத்தளம்", "உறவுநிலை தரவுத்தளம்", "படிநிலை தரவுத்தளம்", "பொருள்நோக்கு தரவுத்தளம்"]}},
+    {a:2, en:{q:"Which of the following mechanisms is used to retrieve records from a database?", o:["Constraint", "key", "Cursor", "insertion point"]}, ta:{q:"பின்வரும் எந்த வழிமுறை தரவுத்தளத்திலிருந்து பதிவுகளைப் பெற்றுத்தர பயன்படுகிறது?", o:["கட்டு (Constraint)", "திறவுகோல் (key)", "Cursor", "செருகும் புள்ளி"]}},
+    {a:2, en:{q:"Which command is used to save changes made to values in records?", o:["Save", "Save As", "Commit", "Oblige"]}, ta:{q:"பதிவுகளில் உள்ள மதிப்புகளில் செய்யப்பட்ட மாற்றங்களை சேமிக்க பயன்படும் கட்டளை எது?", o:["Save", "Save As", "Commit", "Oblige"]}},
+    {a:0, en:{q:"Which of the following is executed to perform certain operations using SQL commands?", o:["execute()", "key()", "cursor()", "run()"]}, ta:{q:"SQL கட்டளைகள் சில செயல்பாடுகளை செய்வதற்கு பின்வரும் எது இயக்கப்படுகிறது?", o:["execute()", "key()", "cursor()", "run()"]}},
+    {a:2, en:{q:"Which function returns the average of the values of a selected field in a table?", o:["Add()", "SUM()", "AVG()", "AVERAGE()"]}, ta:{q:"பின்வரும் எந்த சார்பு அட்டவணையிலுள்ள தேர்ந்தெடுக்கப்பட்ட புலத்தின் மதிப்புகளின் சராசரியைக் கொடுக்கிறது?", o:["Add()", "SUM()", "AVG()", "AVERAGE()"]}},
+    {a:0, en:{q:"Which function returns the largest value of a selected field?", o:["MAX()", "LARGE()", "HIGH()", "MAXIMUM()"]}, ta:{q:"எந்த செயற்கூறு தேர்ந்தெடுக்கப்பட்ட புலத்தின் பெரிய மதிப்பை திருப்பி அனுப்பும்?", o:["MAX()", "LARGE()", "HIGH()", "MAXIMUM()"]}},
+    {a:0, en:{q:"Which of the following is the master table?", o:["sqlite_master", "sql_master", "main_master", "master_mai"]}, ta:{q:"பின்வரும் எது முதன்மை அட்டவணை?", o:["sqlite_master", "sql_master", "main_master", "master_mai"]}},
+    {a:1, en:{q:"Which is the most commonly used statement in SQL?", o:["cursor", "select", "execute", "commit"]}, ta:{q:"SQL-ல் மிகவும் பொதுவாக பயன்படுத்தப்படும் கூற்று எது?", o:["cursor", "select", "execute", "commit"]}},
+    {a:0, en:{q:"Which keyword is used to avoid duplicates?", o:["Distinct", "Remove", "Where", "GroupBy"]}, ta:{q:"பின்வரும் எந்த சிறப்பு சொல் நகல்களை தவிர்க்கும்?", o:["Distinct", "Remove", "Where", "GroupBy"]}}
+  ],
+  [
+    {a:0, en:{q:"Which Python package is used to create 2D plots?", o:["matplotlib.pyplot", "matplotlib.pip", "matplotlib.numpy", "matplotlib.plt"]}, ta:{q:"2D வரைபடத்தை உருவாக்க பயன்படும் பைத்தான் தொகுப்பு எது?", o:["matplotlib.pyplot", "matplotlib.pip", "matplotlib.numpy", "matplotlib.plt"]}},
+    {a:1, en:{q:"Choose the package manager application used to install Python packages or modules.", o:["Matplotlib", "PIP", "plt.show()", "Python package"]}, ta:{q:"பைத்தான் தொகுப்புகள் அல்லது கூறுநிலைகளை நிறுவுவதற்கான கட்டக மேலாளர் (Package manager) பயன்பாட்டை தேர்ந்தெடு.", o:["Matplotlib", "PIP", "plt.show()", "பைத்தான் தொகுப்பு"]}},
+    {a:3, en:{q:"Which facility presents data and information as pictures?", o:["Data list", "Data tuple", "Classes and objects", "Data visualization"]}, ta:{q:"பின்வரும் எந்த வசதி தரவுகள் மற்றும் தகவல்களை படங்களாக வழங்குகிறது?", o:["தரவு லிஸ்ட்", "தரவு டூப்புள்", "இனக்குழுக்கள் மற்றும் பொருள்கள்", "தரவு காட்சிப்படுத்துதல்"]}},
+    {a:1, en:{q:"___ is used to display all resources unified on a single view screen.", o:["Interface", "Dashboard", "Objects", "Graphics"]}, ta:{q:"___ அனைத்து வளங்களையும் ஒன்றுபட்ட ஒற்றை காட்சித் திரையில் காண்பிக்க பயன்படுகிறது.", o:["இடைமுகம்", "டேஷ்போர்ட்", "பொருள்கள்", "வரைகலை"]}},
+    {a:3, en:{q:"Which module needs to be imported in Python to visualize data and information?", o:["csv", "getopt", "mysql", "matplotlib"]}, ta:{q:"பைத்தானில் தரவு மற்றும் தகவல்களை காட்சிப்படுத்த பின்வரும் எந்த கூறுநிலையை தருவிக்க வேண்டும்?", o:["csv", "getopt", "mysql", "matplotlib"]}},
+    {a:0, en:{q:"___ displays information by connecting a series of data points with a straight line.", o:["Line chart", "Pie chart", "Bar chart", "All of these"]}, ta:{q:"___ என்பது தகவல்களை, தரவுப் புள்ளிகளின் தொடரை நேர்கோட்டில் இணைப்பதன் மூலம் காட்டுகிறது.", o:["கோட்டு விளக்கப்படம்", "வட்ட விளக்கப்படம்", "பட்டை விளக்கப்படம்", "அனைத்தும்"]}},
+    {a:0, en:{q:"Hint1: This chart visualizes the change in data over a time interval. Hint2: In this type of chart, points are connected by lines in chronological order. Read the hints and identify the chart.", o:["Line chart", "Bar chart", "Pie chart", "Scatter plot"]}, ta:{q:"Hint1: இந்த விளக்கப்படம் கால இடைவெளியில் தரவுகளின் மாற்றத்தை காட்சிப்படுத்தும். Hint2: இவ்வகை விளக்கப்படத்தில் காலவரிசைப்படி புள்ளிகள் கோடுகளால் இணைக்கப்பட்டிருக்கும். பின்வரும் குறிப்புகளைப் படித்து, பொருத்தமான விளக்கப்படத்தை கண்டறியவும்.", o:["Line chart", "Bar chart", "Pie chart", "Scatter plot"]}},
+    {a:2, en:{q:"Statement A: plt.pie() function can be used to draw a pie chart in Matplotlib. Statement B: the autopct parameter uses Python string formatting to display the value as a percentage. Choose the correct option.", o:["Statement A is true", "Statement B is true", "Both statements are true", "Both statements are false"]}, ta:{q:"சூற்று A: plt.pie() செயற்கூறை பயன்படுத்தி Matplotlib-ல் வட்ட வரைபடம் வரையலாம். சூற்று B: autopct அளபுரு பைத்தான் சரம் வடிவமைப்பை பயன்படுத்தி மதிப்பை சதவீதத்தில் காட்டும். பின்வரும் சூற்றுக்களைப் படித்து, சரியான தேர்வை தேர்ந்தெடுக்கவும்.", o:["சூற்று A சரி", "சூற்று B சரி", "இரு சூற்றும் சரி", "இரு சூற்றும் தவறு"]}}
+  ],
+];
+/* CH_ADD_TM_EXTRA holds paired {a,en{},ta{}} objects (from the Tamil PDF,
+   with my own EN translations). We only keep the Tamil side of these now —
+   see the note above CH_ADD_EM_EXTRA for why the English side is superseded. */
+
+/* ============================================================
+   Chapter-wise additional MCQs, English medium (12th CS)
+   Source: 12th_CS_Public_PTA_and_Additional_MCQs.docx — an independently
+   authored, authoritative English question bank ("Public Questions Inside
+   Textbook & PTA MQP" + "Additional Questions" per chapter, with year tags
+   and answers as given in the document). This REPLACES the machine-translated
+   English side of CH_ADD_TM_EXTRA: cross-checking showed the two sources are
+   genuinely different question banks (most chapters had <50% overlap), so
+   rather than force a translation match that doesn't exist, English medium
+   now sources its additional MCQs from this authoritative docx directly,
+   while Tamil medium keeps the PDF-sourced questions. Each medium's additional
+   pool is independently sized per chapter — see effectiveQ() below, which
+   builds the right pool per medium at quiz-build time. */
+const CH_ADD_EM_EXTRA = [
+  [
+    {q:"Which is the basic building block of computer programs?  [Sep 2020]", o:["Argument", "Parameter", "Subroutine", "Interface"], a:2},
+    {q:"A function definition which calls itself is called  [PTA-1]", o:["main function", "self-function", "function definition", "recursive function"], a:3},
+    {q:"The syntax to define function begins with", o:["fun", "func", "let", "rec"], a:2},
+    {q:"Which of the following key indicate that the function is a recursive function?", o:["rec", "recursive", "recur", "recu"], a:0},
+    {q:"All functions are ________ definitions.", o:["static", "data type", "dynamic", "return"], a:0},
+    {q:"Which of the following do not have any side effects?", o:["User defined functions", "Pure functions", "Impure functions", "Assigned functions"], a:1},
+    {q:"Which of the following function is a impure function?", o:["strlen()", "sin()", "random()", "gcd()"], a:2},
+    {q:"An instance created for the class is", o:["Function", "Variables", "Objects", "Constructor"], a:2}
+  ],
+  [
+    {q:"The expansion of ADT is  [PTA-1]", o:["Built-in datatype", "Derived datatype", "Concrete datatype", "Abstract Data Type"], a:3},
+    {q:"ADT can be implemented using  [PTA-5]", o:["singly linked list", "doubly linked list", "either A or B", "neither A nor B"], a:2},
+    {q:"Which of the following does not allow to name the various parts of a multi-item object?  [PTA-6]", o:["Tuples", "Lists", "Classes", "quadrats"], a:0},
+    {q:"________ provides modularity.", o:["Abstraction", "Constructor", "Recursion", "Structures"], a:0},
+    {q:"Splitting a program into many modules is called", o:["Control Flow", "Looping", "Abstraction", "Modularity"], a:3},
+    {q:"Which of the following are the representation for 'Abstract Data Types'?", o:["Object", "Classes", "Functions", "Inheritance"], a:1},
+    {q:"Which of the following is a compound structure?", o:["Pairs", "Triplet", "Single", "Quadrat"], a:0},
+    {q:"How many ways are used to access the list element?", o:["3", "2", "5", "4"], a:1},
+    {q:"The expansion of CDT is", o:["Built-in datatype", "Derived datatype", "Concrete Data Type", "Abstract Data Type"], a:2},
+    {q:"To facilitate data abstraction, you will need to create ________ types of functions.", o:["3", "2", "5", "4"], a:1},
+    {q:"Which of the following creates List expressions?", o:["()", "[]", "< >", "{}"], a:1},
+    {q:"Which of the following constructs Tuples expressions?", o:["()", "[]", "< >", "{}"], a:0},
+    {q:"We are using here a powerful strategy for designing programs: ________", o:["Abstraction", "Wishful thinking", "Constructors", "Pairs"], a:1},
+    {q:"List is constructed by placing expressions within square brackets separated by", o:["Period(.)", "Colon(:)", "Semicolon(;)", "Comma(,)"], a:3},
+    {q:"Identify the correct list usage from the following: i. LIST[10,20] ii. LIST(10,20) iii. LIST[(0,10), (1,20)] iv. LIST{10,20}", o:["i Only", "i, ii Only", "i, iii Only", "i, ii, iii, iv"], a:2},
+    {q:"Which of the following is used to represent multi-part objects where each part is named?", o:["Class", "Function", "Structure", "Object"], a:0}
+  ],
+  [
+    {q:"A variable which is declared inside a function which contains another function definition:  [PTA-1]", o:["Local", "Global", "Enclosed", "Built-in"], a:2},
+    {q:"Which are loaded as soon as the library files are imported to the program?  [PTA-3]", o:["Built-in scope variables", "Global scope variables", "Enclosed scope variables", "Local scope variables"], a:0},
+    {q:"Which of the following is not the example of modules?  [PTA-5]", o:["procedures", "subroutines", "class", "functions"], a:2},
+    {q:"The ________ rule is used to decide the order in which the scopes are to be searched.  [Mar 2025]", o:["LBEG", "LEGB", "GEBL", "GBLE"], a:1},
+    {q:"The duration for which a variable is alive is called its", o:["Scope time", "end time", "life time", "variable time"], a:2},
+    {q:"Scope refers to the visibility of", o:["variables", "parameters", "functions", "all of these"], a:0},
+    {q:"Which are composed of one or more independently developed modules?", o:["Access control", "Encapsulation", "Programs", "Data types"], a:2},
+    {q:"It is a fundamental concept in security that minimizes risk to the object.", o:["Access control", "Encapsulation", "Inheritance", "Data types"], a:0},
+    {q:"In terms of hierarchy, the scope with highest priority is", o:["Local", "Enclosed", "Global", "Built-in"], a:0},
+    {q:"In terms of hierarchy, the scope with lowest priority is", o:["Local", "Enclosed", "Global", "Built-in"], a:3},
+    {q:"Always, a function will first look up for a variable name in its", o:["local scope", "Enclosed scope", "Global scope", "Built-in scope"], a:0},
+    {q:"Which contain instructions, processing logic, and data?", o:["Scope", "Object", "Modules", "Interface"], a:2},
+    {q:"Which of the following can be separately compiled and stored in a library?", o:["Programs", "Scope", "Namespace", "Modules"], a:3},
+    {q:"Which of the following members of a class are denied access from the outside of class?", o:["private", "public", "protected", "All of these"], a:0},
+    {q:"The members that are accessible from outside the class is", o:["private", "public", "protected", "All of these"], a:1},
+    {q:"The arrangement of private instance variables and public methods ensures the principle of", o:["Data Encapsulation", "Inheritance", "Polymorphism", "All of these"], a:0},
+    {q:"The members accessible from within the class and are also available to its sub-classes is", o:["private", "public", "protected", "All of these"], a:2},
+    {q:"By default, all members in a python class are", o:["private", "public", "protected", "All of these"], a:1},
+    {q:"By default, all members in C++ and Java class are", o:["private", "public", "protected", "All of these"], a:0},
+    {q:"The symbol prefixed with the variable to indicate protected and private access specifiers is", o:["Single underscore", "Double underscore", "Single or Double underscore", "Backslash"], a:2}
+  ],
+  [
+    {q:"Which one of the following is not a factor to measure the execution time of an algorithm?  [Sep 2020]", o:["Speed of the machine", "Operating system", "Programming language used", "Selection"], a:3},
+    {q:"The algorithm uses 'Divide and Conquer' technique is  [PTA-5]", o:["Insertion sort", "Bubble sort", "Linear search", "Binary search"], a:3},
+    {q:"Time complexity of bubble sort in best case is  [PTA-1]", o:["O(n)", "θ(n log n)", "O(n^2)", "θ(n(log n)^2)"], a:0},
+    {q:"Step by step procedure for solving a given problem:  [PTA-2]", o:["Program", "Pseudo Code", "Flowchart", "Algorithm"], a:3},
+    {q:"Which of the following is not a characteristic of an algorithm?  [PTA-3]", o:["Input", "Program", "Finiteness", "Simplicity"], a:1},
+    {q:"This is a theoretical performance analysis of an algorithm:  [PTA-4]", o:["Priori estimates", "Posteriori testing", "Space factor", "Time factor"], a:0},
+    {q:"A finite set of instructions to accomplish a particular task is called", o:["Flow chart", "Algorithm", "Pseudo code", "Walkthrough"], a:1},
+    {q:"The way of defining an algorithm is called", o:["Algorithmic procedure", "Algorithmic definition", "Algorithmic function", "Algorithmic strategy"], a:3},
+    {q:"An algorithm that yields expected output for a valid input is called", o:["Problem solving", "Derivations", "Algorithmic solution", "None"], a:2},
+    {q:"The efficiency of which state can be expressed as O(n)?", o:["Average case", "Best case", "Worst case", "NULL case"], a:2},
+    {q:"The efficiency of which state can be expressed as O(1)?", o:["Average case", "Best case", "Worst case", "NULL case"], a:1},
+    {q:"Linear search is also called as", o:["Continuous search", "Ordered search", "Binary search", "Sequential search"], a:3},
+    {q:"Half-interval search algorithm is also called as", o:["Linear search", "Binary search", "Continuous search", "Ordered search"], a:1}
+  ],
+  [
+    {q:"Expand: IDLE  [Mar 2020]", o:["Integrated Device Learning Editor", "Internal Development Loading Environment", "Integrated Development Learning Environment", "Internal Drive Loaded Environment"], a:2},
+    {q:"Which one of the following character is used to give a single line comments in Python program?  [Sep 2021]", o:["@", "#", "&", "$"], a:1},
+    {q:"To run the Python script by pressing the key  [Sep 2020, Mar 2024]", o:["F2", "F5", "F7", "F10"], a:1},
+    {q:"What will be the value of X from the following code snippet? A, B = 10, 3; X = A if (A/B==3) else B; print(X)  [PTA-2]", o:["3", "10", "True", "False"], a:0},
+    {q:"In how many ways python programs can be written?  [PTA-3]", o:["1", "2", "3", "4"], a:1},
+    {q:"Which of the following statement(s) is not correct? (1) Python is a general-purpose programming language... (2) Python is platform independent... (3) The programs written in Python are difficult to read...  [PTA-4]", o:["Statement (1) Only", "Statement (1) and (2)", "Statement (3) Only", "All statements"], a:2},
+    {q:"The floor division operator in Python:  [PTA-5]", o:["/", "%", "%%", "//"], a:3},
+    {q:"The Python language was developed by Guido van Rossum of the National Research Institute (CWI) in which country?", o:["Philippines", "Saudi Arabia", "Netherland", "Australia"], a:2},
+    {q:"Python was released in the year", o:["1990", "1991", "1992", "1993"], a:1},
+    {q:"All data values in Python are", o:["class", "object", "data type", "function"], a:1},
+    {q:"Python files are by default saved with extension", o:[".pyth", ".python", ".pyt", ".py"], a:3},
+    {q:"Which command is used to execute python script?", o:["Run -> Run Module", "File -> Run Module", "Shell -> Run Module", "Terminal -> Run Module"], a:0},
+    {q:"input() accepts all data as ________ but not as numbers.", o:["digits", "strings", "character", "None"], a:1},
+    {q:"The function used to convert string data as integer explicitly is", o:["int()", "integer()", "num()", "digit()"], a:0},
+    {q:"In Python which of the following is used to indicate blocks of codes?", o:["Spaces", "Tabs", "Both a) and b)", "Empty Line"], a:2},
+    {q:"Which separation is necessary between tokens?", o:["Whitespace", "dot", "tab", "All of these"], a:0},
+    {q:"It is an invalid identifier.", o:["12Name", "name", "totalmark", "num"], a:0},
+    {q:"Which operator is called a comparative operator?", o:["=", "==", "+=", "//"], a:1},
+    {q:"Which operator is called assignment operator?", o:["=", "==", "**", "//"], a:0},
+    {q:"What is the output for the following code? >>> 5 + 50 * 10", o:["550", "55", "505", "15"], a:2},
+    {q:"What will be the value of X from the following code snippet? A, B = 10, 3; X = A if (A//B==3) else B; print(X)", o:["3", "10", "True", "False"], a:1},
+    {q:"Octal literals are preceded with", o:["Ox", "0o", "Oh", "Oi"], a:1},
+    {q:"What is the output of the following code? a, b = 100, 10; print(a/b)", o:["10", "10.0", "10.5", "3"], a:1},
+    {q:"The output for the following line is: print('\" Python \"')", o:["Python", "'Python'", "\"Python\"", "\" Python\""], a:3},
+    {q:"What is the output for the following code? x=10; y=20; print('The Sum is: ', x + y)", o:["30", "the sum is 30", "The Sum is 30", "The Sum is: 30"], a:3},
+    {q:"What is the output of the following code? a=100; b=30; c=a//b; print(c)", o:["10", "10.0", "10.5", "3"], a:3},
+    {q:"What is the output for the following code? a=97; b=35; a>b or a==b", o:["True", "False", "0", "1"], a:0},
+    {q:"What is the output for the following code? a=97; b=35; not (a>b and a==b)", o:["True", "False", "0", "1"], a:0},
+    {q:"What is the output for the following code? a, b = 30, 20; min = a if a<b else b; print(min)", o:["20", "30", "True", "False"], a:0},
+    {q:"What is the output for the following code? x = 1+3.14j; print(x.imag)", o:["1+3.14j", "1", "3.14", "3.14j"], a:2}
+  ],
+  [
+    {q:"What is the output of the following snippet? for i in range(2,10,2): print(i,end=' ')  [Mar 2020]", o:["8 6 4 2", "2 4 6 8 10", "2 4 6 8", "2 4 6"], a:2},
+    {q:"The statement which is used to skip the remaining part of the loop and start with next iteration is  [Sep 2020]", o:["break", "continue", "pass", "jump"], a:1},
+    {q:"Which is the most comfortable loop?  [Jul 2022]", o:["do..while", "while", "for", "if..elif"], a:2},
+    {q:"What is the output of the following snippet in Python? for x in range(5): if x==2: continue; print(x, end=' ')  [Mar 2024]", o:["0 1 3 4", "0 1 2", "0 1 2 3 4", "0 1 2 3"], a:0},
+    {q:"What will be the output of the following python code? for i in range(1,10,2): print(i, end=' ')  [PTA-1]", o:["1 3 5 7 9", "1 2 4 6 8", "2 4 6 8 10", "1 3 5 7 10"], a:0},
+    {q:"What will be the output of the following Python snippet? a=15; while (a<=20): print(a%a, end=' '); a=a+1  [PTA-3]", o:["15 16 17 18 19 20", "20 19 18 17 16", "0 0 0 0 0 0", "1 1 1 1 1 1"], a:2},
+    {q:"The optional parameter of range() function in Python:  [PTA-5]", o:["start", "stop", "step", "slice"], a:2},
+    {q:"Match the following: a) if...elif (i) Jump, b) while (ii) Block, c) pass (iii) Loop, d) indentation (iv) Branching  [PTA-4]", o:["a-(iv), b-(iii), c-(i), d-(ii)", "a-(i), b-(iii), c-(iv), d-(ii)", "a-(iv), b-(i), c-(iii), d-(ii)", "a-(i), b-(iv), c-(ii), d-(iii)"], a:0},
+    {q:"A program statement that causes a jump of control from one part of the program to another is called", o:["Statements", "Control statements", "Blocks", "Scope"], a:1},
+    {q:"Which of the following is not an alternative or branching statement in Python?", o:["simple if", "if..else", "if..elif..else", "while"], a:3},
+    {q:"Which of the following terminates the loop containing it?", o:["break", "continue", "pass", "jump"], a:0},
+    {q:"Which of the following is a null statement in Python?", o:["break", "continue", "pass", "null"], a:2},
+    {q:"The statement used as a placeholder is", o:["break", "continue", "pass", "null"], a:2},
+    {q:"What is the output for the following code? i=10; while(i<=15): print(i,end='\\t'); i+=2", o:["10 11 12 13 14 15", "11 13 15", "10 12 14", "10 12 14 15"], a:2},
+    {q:"What is the stop value for the following statement? range(30)", o:["0", "1", "30", "29"], a:2},
+    {q:"What is the start value for the following statement? range(20)", o:["0", "1", "20", "19"], a:0},
+    {q:"What is the output for the following code? for word in 'Computer Science': if word=='e': break; print(word, end='')", o:["Computr Scinc", "Compute", "Comput", "Computer Scinc"], a:2},
+    {q:"What is the output for the following code? for word in 'Computer Science': if word=='e': continue; print(word, end='')", o:["Computr Scinc", "Compute", "Comput", "Computer Scinc"], a:0},
+    {q:"What is the output for the following code? i=1; while True: if i%5==0: break; print(i,end=' '); i+=1", o:["1 2", "1 2 3", "1 2 3 4 5", "1 2 3 4"], a:3}
+  ],
+  [
+    {q:"Evaluate the following function and write the output: x=14.4; print(math.floor(x))  [Mar 2020]", o:["13", "14", "15", "14.3"], a:1},
+    {q:"The symbol used to define arguments in Variable-length argument is  [PTA-2]", o:["#", "*", "$", ":"], a:1},
+    {q:"Non-keyword variable arguments are called as  [PTA-4]", o:["Sets", "List", "Tuples", "Dictionary"], a:2},
+    {q:"What will be the output of the following Python snippet? c=5; def add(): c=c+5; print(c); add()  [PTA-5]", o:["5", "10", "15", "Error (UnboundLocalError)"], a:3},
+    {q:"Which of the following is not an argument type?  [PTA-6]", o:["Required arguments", "Default arguments", "Keyword arguments", "Fixed length arguments"], a:3},
+    {q:"It avoids repetition and makes high degree of code reusing.", o:["Function", "Loop", "Branching", "Jumping"], a:0},
+    {q:"Basically, we can divide functions into ________ types.", o:["1", "2", "3", "4"], a:3},
+    {q:"How many types of arguments are used by functions in Python?", o:["1", "2", "3", "4"], a:3},
+    {q:"Which of the following statement indicates end of the function?", o:["Function prototype", "Function name", "end", "return"], a:3},
+    {q:"The variables used in the function definition are called", o:["Parameters", "Arguments", "Identifiers", "Constants"], a:0},
+    {q:"The values we pass to the function parameters are called", o:["Parameters", "Arguments", "Identifiers", "Constants"], a:1},
+    {q:"Which of the following allows you to put arguments in improper order?", o:["Keyword arguments", "Variable-length argument", "Default argument", "Required argument"], a:0},
+    {q:"An argument that takes a default value if no value is provided in the function call is", o:["Keyword arguments", "Variable-length argument", "Default argument", "Required argument"], a:2},
+    {q:"What is the output of the following code? def loc(): y='Local'; loc(); print(y)", o:["Local", "y", "y='Local'", "Error"], a:3},
+    {q:"What is the output of the following code? def hello(): return; print(hello())", o:["hello - Python", "Hello - Python", "None", "hello"], a:2},
+    {q:"Which of the following keyword is necessary to modify the value of global variable inside the function?", o:["glob", "global", "glopal", "public"], a:1},
+    {q:"What is the output of the following code? def add(a,b=3,c): return a+b+c; print(add(5,10,15))", o:["30", "23", "10", "Error (non-default argument follows default argument)"], a:3},
+    {q:"What is the output of the following code? def add(a,b=3,c=2): return a+b+c; print(add(5,10,15))", o:["30", "23", "10", "Error"], a:0},
+    {q:"What is the output of the following code? Sum = lambda a1,a2: a1+a2; print(Sum(20,40)); print(Sum(-20,40))", o:["60, -60", "20, -20", "60, 20", "Error"], a:2},
+    {q:"Default recursive calls limit in Python is", o:["1000", "2000", "1100", "2200"], a:0},
+    {q:"What is the output of the following statement? eval('25*2-5*4')", o:["-300", "180", "30", "-450"], a:2}
+  ],
+  [
+    {q:"What will be the output of the following code? str='NEW DELHI'; str[3]='-'  [Mar 2020]", o:["NEW-DELHI", "NE-DELHI", "NEW DELHI", "Error"], a:3},
+    {q:"The operator used to display a string in multiple number of times is  [Sep 2020]", o:["+", "&", "*", "++"], a:2},
+    {q:"Which command can be used to remove entire string variable in Python?  [PTA-3]", o:["rem", "remove", "del", "delete"], a:2},
+    {q:"What will be the output of the following snippet? str1='COMPUTER'; print(str1[::2])  [PTA-6]", o:["ER", "CO", "OPTR", "CMUE"], a:3},
+    {q:"Which of the following is the output of the given Python code? Str1='Computer Science'; print(str1[::1])  [Mar 2025]", o:["ecneics retupmoC", "Computer Science", "enis eumC", "Cmue Sine"], a:1},
+    {q:"Which of the following is used to handle array of characters?", o:["Word", "Character", "String", "Letters"], a:2},
+    {q:"Index values are otherwise called as", o:["Size", "Length", "Superscript", "Subscript"], a:3},
+    {q:"The positive subscript of a string always starts from", o:["0", "1", "2", "3"], a:0},
+    {q:"The negative subscript of a string starts from", o:["0", "1", "-1", "3"], a:2},
+    {q:"The operator used to append a new string with an existing string is", o:["+", "+=", "++", "*"], a:1},
+    {q:"The string formatting operator is", o:["%", "+=", "++", "<>"], a:0},
+    {q:"Which of the following function returns the number of characters in a string?", o:["len(str)", "str.len()", "length(str)", "str.length()"], a:0},
+    {q:"The function which returns the number of substrings occurs within the given range is", o:["count()", "find()", "search()", "None of these"], a:0},
+    {q:"The function which allows you to change all occurrences of a particular character in a string is", o:["modify()", "change()", "replace()", "update()"], a:2},
+    {q:"Stride is a ________ argument in slicing operation.", o:["first", "second", "third", "fourth"], a:2},
+    {q:"What is the output for the following code? str='School'; print(str[2])", o:["c", "o", "h", "l"], a:2},
+    {q:"What is the output for the following code? str='School'; print(str[-2])", o:["c", "o", "h", "l"], a:1},
+    {q:"What is the output for the following code? str='Cat'; str[0]='B'; print(str)", o:["Bat", "Cat", "CaB", "Error"], a:3}
+  ],
+  [
+    {q:"Marks = [20, 40, 60, 80, 100]; print(Marks[-2]). What will be the output?  [Sep 2020]", o:["60", "100", "40", "80"], a:3},
+    {q:"What is the output for the following code? Marks = [10, 23, 41, 75]; print(Marks[-3])  [Sep 2021]", o:["10", "23", "41", "75"], a:1},
+    {q:"Which function is used to find length of a list in Python?  [PTA-3]", o:["for()", "range()", "len()", "length()"], a:2},
+    {q:"Which Function is used to generate a series of values in Python?  [PTA-4]", o:["series()", "range()", "list()", "tuple()"], a:1},
+    {q:"Which of the following is a mutable and an unordered collection of elements without duplicates?  [PTA-5]", o:["List", "Tuple", "Set", "Dictionary"], a:2},
+    {q:"How many elements are in the list given below? MyList=[78,91,34,[32,61,85],65]  [PTA-6]", o:["3", "4", "5", "7"], a:2},
+    {q:"Which of the following is not a 'sequence data type'?", o:["List", "Tuples", "Set", "String"], a:2},
+    {q:"It is an ordered collection of values enclosed within square brackets [].", o:["Tuples", "Set", "List", "Dictionary"], a:2},
+    {q:"Which type stores a key along with its element?", o:["List", "Tuple", "Set", "Dictionary"], a:3},
+    {q:"Which of the following consists of a number of values separated by comma and enclosed within parentheses?", o:["Tuples", "Set", "List", "Dictionary"], a:0},
+    {q:"Which of the following represents A={10, 20, 30}?", o:["List", "Tuple", "Dictionary", "Set"], a:3},
+    {q:"What is the output for the following code? List=[10,20,30,[40,50,60],70]; print(len(List))", o:["7", "6", "5", "3"], a:2},
+    {q:"What is the output for the following code? mylist=[36,12,12]; x=mylist.index(12); print(x)", o:["0", "1", "-1", "2"], a:1},
+    {q:"L=[2,4,7,11,15] - the negative index represents 11 is", o:["-4", "-1", "-3", "-2"], a:3},
+    {q:"The correct way of declaring a tuple with one element is", o:["tup=(10,)", "tup=(10.)", "tup=(10-)", "tup=(10)"], a:0},
+    {q:"The function used to delete all elements in a dictionary is", o:["del()", "clear()", "delete()", "clean()"], a:1}
+  ],
+  [
+    {q:"The class method must have the first parameter named as  [PTA-2]", o:["this", "self", "class", "def"], a:1},
+    {q:"The Class instantiation means:  [PTA-5]", o:["Creating a class", "Creating a constructor", "Creating a Destructor", "Creating an object"], a:3},
+    {q:"Which of the following is not an object-oriented programming language?", o:["C", "C++", "Python", "Java"], a:0},
+    {q:"Which one is referred as instance of a class?", o:["Class", "Object", "Methods", "Members"], a:1},
+    {q:"In Python, by default the variables which are defined inside the class is", o:["Private", "Public", "Protected", "Hidden"], a:1},
+    {q:"Which of the following is used to initialize the class variables?", o:["Class", "Object", "Constructor", "Destructor"], a:2},
+    {q:"In Python, a class is defined by using the keyword", o:["this", "self", "class", "def"], a:2},
+    {q:"Which of the following variables can be accessed only within the class?", o:["Private", "Public", "Protected", "Hidden"], a:0},
+    {q:"It gets executed automatically when an object exits from the scope.", o:["Class", "Object", "Constructor", "Destructor"], a:3}
+  ],
+  [
+    {q:"A column is known as:  [PTA-1]", o:["Attribute", "Tuple", "Relation", "Entity"], a:0},
+    {q:"Which of the following is an example of RDBMS?  [PTA-3]", o:["Oracle", "MySQL", "MariaDB", "All of these"], a:3},
+    {q:"What symbol is used for PROJECT statement in Relational Algebra?  [PTA-5]", o:["σ", "Π", "X", "∪"], a:1},
+    {q:"Unprocessed raw facts are called", o:["Data", "Information", "Program", "Output"], a:0},
+    {q:"Processed data is called", o:["Information", "Raw facts", "Database", "Record"], a:0},
+    {q:"Hierarchical model was developed by", o:["IBM", "Microsoft", "Apple", "Oracle"], a:1},
+    {q:"In ER model, entity is represented by", o:["Rectangle", "Ellipse", "Diamond", "Line"], a:0},
+    {q:"In ER model, attributes are represented by", o:["Rectangle", "Ellipse", "Diamond", "Line"], a:1},
+    {q:"In ER model, relationship is represented by", o:["Rectangle", "Ellipse", "Diamond", "Line"], a:2},
+    {q:"Cartesian product is represented by the symbol", o:["σ", "Π", "X", "∪"], a:2}
+  ],
+  [
+    {q:"Which command is used to give permissions to users?  [Sep 2020]", o:["Revoke", "Grant", "Allow", "Commit"], a:1},
+    {q:"Which command is used to take back permissions granted to users?  [PTA-1]", o:["Grant", "Deny", "Revoke", "Rollback"], a:3},
+    {q:"Which DDL command is used to delete all rows from a table and free the space?  [PTA-2]", o:["DELETE", "REMOVE", "DROP", "TRUNCATE"], a:3},
+    {q:"Which TCL command is used to restore database to previous commit state?  [PTA-3]", o:["Commit", "Savepoint", "Restore", "Rollback"], a:3},
+    {q:"Which command is used to modify existing data in a table?  [PTA-6]", o:["ALTER", "UPDATE", "MODIFY", "CHANGE"], a:1},
+    {q:"What is the expansion of SQL?", o:["Standard Query Language", "Structured Query Language", "Sequential Query Language", "Simple Query Language"], a:1},
+    {q:"SQL was originally developed at", o:["Bell Labs", "IBM's Research Centre", "Microsoft", "Oracle"], a:1},
+    {q:"The original name of SQL was", o:["SEQUEL", "STRUCTURED", "QUERY", "S-SQL"], a:2},
+    {q:"A condition or check applied on a column is called", o:["Key", "Attribute", "Constraint", "Clause"], a:2},
+    {q:"Which constraint ensures that a column cannot have duplicate values?", o:["Unique", "Primary Key", "Check", "Default"], a:0},
+    {q:"Which keyword is used to eliminate duplicate rows in SELECT query?", o:["UNIQUE", "DISTINCT", "ALL", "SEPARATE"], a:1}
+  ],
+  [
+    {q:"What is the expansion of CSV?  [Sep 2020]", o:["Common Separated Values", "Computer Separated Values", "Command Separated Values", "Comma Separated Values"], a:3},
+    {q:"Excel file is saved with extension  [PTA-2]", o:[".csv", ".xls / .xlsx", ".doc", ".txt"], a:1},
+    {q:"Which file open mode opens a file for exclusive creation, failing if the file already exists?  [PTA-3]", o:["r", "x", "w", "a"], a:1},
+    {q:"Which parameter in csv.reader is used to remove leading spaces from data?  [PTA-4]", o:["delspace", "skipinitialspace", "trim", "strip"], a:1},
+    {q:"Which class creates an object that operates like a regular reader but maps information to a dictionary?  [PTA-5]", o:["reader", "DictReader", "writer", "DictWriter"], a:1},
+    {q:"Which of the following is used to write a single row into a CSV file?", o:["write()", "writerow()", "writeline()", "writerows()"], a:1},
+    {q:"Which function is used to write multiple rows into a CSV file at once?", o:["write()", "writerow()", "writeline()", "writerows()"], a:3},
+    {q:"A set of formatting parameters bundled together in CSV module is called", o:["format", "dialect", "pattern", "schema"], a:1},
+    {q:"Which method closes an opened file object?", o:["exit()", "stop()", "end()", "close()"], a:3}
+  ],
+  [
+    {q:"Which special variable in Python stores the name of the currently running module?  [PTA-1, PTA-4]", o:["__file__", "__name__", "__main__", "__doc__"], a:1},
+    {q:"MinGW stands for:  [PTA-5]", o:["Minimalist GNU for Windows", "Mini GNU Windows", "Minimal GNU World", "Minimum Gateway Windows"], a:1},
+    {q:"SWIG stands for:", o:["Simple Wrapper Interface Generator", "Structured Wrapper Interface Gateway", "System Wrapper Interface Generator", "Simplified Wrapper Interface Generator"], a:3},
+    {q:"Which compiler is used to compile C++ files in MinGW?", o:["gcc", "g++", "clang", "turbo"], a:1},
+    {q:"Which module is used to parse command-line options and parameter list?", o:["sys", "getopt", "os", "argv"], a:1},
+    {q:"Which of the following is not a module in Python?", o:["sys", "os", "argv", "getopt"], a:2}
+  ],
+  [
+    {q:"Which function returns the total number of records in a table?  [Sep 2020]", o:["SUM()", "TOTAL()", "COUNT()", "AVG()"], a:3},
+    {q:"Which method retrieves all rows of a query result?  [PTA-2]", o:["fetchone()", "fetchmany()", "fetchall()", "fetch()"], a:2},
+    {q:"Which method retrieves the next single row of a query result?  [PTA-4]", o:["fetchone()", "fetchmany()", "fetchall()", "fetchrow()"], a:0},
+    {q:"Which clause is used in SQL to filter records based on group condition?", o:["HAVING", "WHERE", "GROUP BY", "ORDER BY"], a:0},
+    {q:"Which clause is used to filter rows before grouping?", o:["HAVING", "WHERE", "ORDER BY", "DISTINCT"], a:1},
+    {q:"Placeholders for parameter substitution in sqlite3 query are", o:["% and &", "$ and #", "? and :name", "< > and [ ]"], a:2}
+  ],
+  [
+    {q:"Which function is used to display the created plot window on the screen?  [Sep 2021]", o:["plt.draw()", "plt.show()", "plt.display()", "plt.view()"], a:1},
+    {q:"Which function is used to draw a pie chart in Matplotlib?  [PTA-2]", o:["plt.plot()", "plt.bar()", "plt.pie()", "plt.scatter()"], a:3},
+    {q:"Which plot shows the relationship between two variables as cloud of points?  [PTA-4]", o:["Line chart", "Bar chart", "Scatter plot", "Box plot"], a:2},
+    {q:"Which button in Matplotlib toolbar allows panning and dragging the plot axis?", o:["Zoom", "Pan Axis", "Home", "Configure Subplots"], a:1},
+    {q:"Visual representation of information, data, or knowledge intended to present complex information quickly and clearly is called", o:["Dashboard", "Infographics", "Pie Chart", "Histogram"], a:1},
+    {q:"Which chart represents categorical data with rectangular bars whose lengths are proportional to values?", o:["Bar chart", "Line chart", "Scatter plot", "Pie chart"], a:0},
+    {q:"Which chart is a circular statistical graphic divided into slices to illustrate numerical proportion?", o:["Bar chart", "Pie chart", "Histogram", "Box plot"], a:1}
+  ],
+];
+
+// Assign the per-medium extra pools onto each CH_ADD chapter object.
+// qEnExtra: authoritative English questions from the docx (per chapter).
+// qTaExtra: the Tamil PDF-sourced questions (only the ta{} side of the old
+// paired CH_ADD_TM_EXTRA objects — the en{} side is superseded by qEnExtra).
+CH_ADD.forEach((ch, i) => {
+  ch.qEnExtra = CH_ADD_EM_EXTRA[i] || [];
+  ch.qTaExtra = (CH_ADD_TM_EXTRA[i] || []).map(item => ({ q: item.ta.q, o: item.ta.o, a: item.a }));
+});
+
+// Returns the effective question pool for a chapter in a given medium:
+// the shared paired questions (chapter.q, unaffected — used by every other
+// subject/class) plus that medium's extra pool, wrapped in the same
+// {a, en:{q,o}, ta:{q,o}} shape so all existing rendering/grading code keeps
+// working unchanged regardless of which pool a question came from.
+function effectiveQ(chapter, medium){
+  const extra = medium === 'TM' ? (chapter.qTaExtra || []) : (chapter.qEnExtra || []);
+  const wrapped = extra.map(item => medium === 'TM'
+    ? { a: item.a, ta: { q: item.q, o: item.o } }
+    : { a: item.a, en: { q: item.q, o: item.o } });
+  return chapter.q.concat(wrapped);
+}
+
+
 const DATA = {
   "12": { "Computer Science": CH, "Computer Applications": CA },
   "11": { "Computer Science": CH11, "Computer Applications": CA11 }
 };
+
+/* Additional (exam / previous-year) MCQs, chapter-wise. Extend this object
+   as more subjects/mediums get their additional question banks added —
+   e.g. DATA_ADD["12"]["Computer Applications"] = CA_ADD; DATA_ADD["11"][...] = ...
+   Medium (EM/TM) doesn't need a separate key: each question object already
+   carries both en{} and ta{} — same pattern as the book-back DATA above. */
+const DATA_ADD = {
+  "12": { "Computer Science": CH_ADD }
+};
+function additionalAvailable(cls, subject){
+  return !!(DATA_ADD[cls] && DATA_ADD[cls][subject] && DATA_ADD[cls][subject].length);
+}
 
 /* ============================================================
    GOOGLE SHEET INTEGRATION
@@ -8482,8 +9185,9 @@ function viewStudentReport(){
    ============================================================ */
 let state = {
   cls:null, subject:null, medium:'EM',
+  mode:null, // 'book' (Text Book Evaluation) or 'additional' (Previous-year / extra exam MCQs)
   name:'', school:'',
-  chapters:[], // resolved chapter list for current subject/medium
+  chapters:[], // resolved chapter list for current subject/medium/mode
   activeSet:[], // current quiz question set [{chIdx,qIdx,chTitle,medium,subject,cls,qObj}]
   activeTitle:'',
   answers:[], // selected index per question or -1
@@ -8504,7 +9208,7 @@ function applySubjectTheme(subj){
   else delete document.body.dataset.subject;
 }
 
-const ALL_SCREENS = ['screen-select','screen-details','screen-chapters','screen-quiz','screen-results','screen-py-chapters','screen-py-quiz','screen-py-result'];
+const ALL_SCREENS = ['screen-select','screen-mode','screen-details','screen-chapters','screen-quiz','screen-results','screen-py-chapters','screen-py-quiz','screen-py-result'];
 function show(id){
   ALL_SCREENS.forEach(s=>{
     $('#'+s).classList.toggle('hidden', s!==id);
@@ -8519,7 +9223,7 @@ function renderClassPicker(){
     const d = document.createElement('div');
     d.className='choice-pill'+(state.cls===c?' active':'');
     d.textContent = 'Std '+c;
-    d.onclick = ()=>{ state.cls=c; state.subject=null; applySubjectTheme(null); renderClassPicker(); renderSubjectPicker(); checkStep1(); };
+    d.onclick = ()=>{ state.cls=c; state.subject=null; state.mode=null; applySubjectTheme(null); renderClassPicker(); renderSubjectPicker(); checkStep1(); };
     el.appendChild(d);
   });
 }
@@ -8532,7 +9236,7 @@ function renderSubjectPicker(){
     const d = document.createElement('div');
     d.className='choice-pill'+(state.subject===s?' active':'');
     d.textContent = `${subjectIcon(s)} ${s}`;
-    d.onclick = ()=>{ state.subject=s; applySubjectTheme(s); renderSubjectPicker(); checkStep1(); };
+    d.onclick = ()=>{ state.subject=s; state.mode=null; applySubjectTheme(s); renderSubjectPicker(); checkStep1(); };
     el.appendChild(d);
   });
 }
@@ -8551,12 +9255,74 @@ renderClassPicker(); renderSubjectPicker();
 $all('#mediumPicker .choice-pill')[0].classList.add('active');
 
 $('#toDetailsBtn').onclick = ()=>{
-  state.chapters = DATA[state.cls][state.subject];
+  renderModePicker();
+  show('screen-mode');
+};
+
+/* ---------- Screen 1B: Book Back vs Additional MCQ mode ---------- */
+function renderModePicker(){
+  const el = $('#modePicker'); el.innerHTML='';
+  const hasAdd = additionalAvailable(state.cls, state.subject);
+  const options = [
+    { key:'book', title:'📘 Book Back MCQs', sub:'Textbook chapter-wise questions', enabled:true },
+    { key:'additional', title:'✨ Additional MCQs', sub: hasAdd ? 'Previous-year & extra exam questions, chapter-wise' : 'Coming soon for this subject', enabled:hasAdd }
+  ];
+  options.forEach(opt=>{
+    const d = document.createElement('div');
+    d.className = 'choice-pill mode-pill' + (state.mode===opt.key?' active':'') + (!opt.enabled?' disabled-pill':'');
+    d.innerHTML = `<div class="mode-title">${opt.title}</div><div class="mode-sub">${opt.sub}</div>`;
+    if(opt.enabled){
+      d.onclick = ()=>{ state.mode=opt.key; renderModePicker(); checkStep2(); };
+    }
+    el.appendChild(d);
+  });
+  $('#modeAvailNote').textContent = hasAdd ? '' : 'Additional MCQs for this subject/class will be added soon.';
+  checkStep2();
+}
+function checkStep2(){
+  $('#toDetailsBtn2').disabled = !state.mode;
+}
+function chaptersForCurrentMode(){
+  return state.mode === 'additional' ? DATA_ADD[state.cls][state.subject] : DATA[state.cls][state.subject];
+}
+$('#backToSelectFromMode').onclick = ()=> show('screen-select');
+$('#toDetailsBtn2').onclick = ()=>{
+  state.chapters = chaptersForCurrentMode();
   show('screen-details');
 };
 
+/* ---------- Switching between Book Back <-> Additional MCQs mid-flow ---------- */
+function switchToMode(newMode){
+  state.mode = newMode;
+  state.chapters = chaptersForCurrentMode();
+  renderChapterList();
+  show('screen-chapters');
+}
+function updateTryOtherModeBanner(){
+  const targetMode = state.mode==='additional' ? 'book' : 'additional';
+  const targetAvailable = targetMode==='additional' ? additionalAvailable(state.cls, state.subject) : true;
+  const banner = $('#tryOtherModeBanner');
+  if(!targetAvailable){ banner.classList.add('hidden'); return; }
+  banner.classList.remove('hidden');
+  $('#tryOtherModeText').textContent = targetMode==='additional'
+    ? '✨ Want to try Additional MCQs (previous-year & extra exam questions) for this subject?'
+    : '📘 Want to try the Book Back MCQs for this subject?';
+  $('#tryOtherModeBtn').onclick = ()=> switchToMode(targetMode);
+}
+function updateTryOtherModeResultsBanner(){
+  const targetMode = state.mode==='additional' ? 'book' : 'additional';
+  const targetAvailable = targetMode==='additional' ? additionalAvailable(state.cls, state.subject) : true;
+  const banner = $('#tryOtherModeResultsBanner');
+  if(!targetAvailable){ banner.classList.add('hidden'); return; }
+  banner.classList.remove('hidden');
+  $('#tryOtherModeResultsText').textContent = targetMode==='additional'
+    ? '✨ Want to try Additional MCQs (previous-year & extra exam questions)? Click here to see the chapter list.'
+    : '📘 Want to try the Book Back MCQs for this subject? Click here to see the chapter list.';
+  $('#tryOtherModeResultsBtn').onclick = ()=> switchToMode(targetMode);
+}
+
 /* ---------- Screen 2: student details ---------- */
-$('#backToSelect').onclick = ()=> show('screen-select');
+$('#backToSelect').onclick = ()=> show('screen-mode');
 $('#toChaptersBtn').onclick = ()=>{
   const n = $('#studentName').value.trim();
   const s = $('#schoolName').value.trim();
@@ -8565,7 +9331,7 @@ $('#toChaptersBtn').onclick = ()=>{
   applySubjectTheme(state.subject);
   $('#showName').textContent = n;
   $('#showSchool').textContent = s;
-  $('#showSubjectMedium').textContent = `${subjectIcon(state.subject)} Std ${state.cls} • ${state.subject} • ${state.medium==='EM'?'English Medium':'தமிழ் மீடியம்'}`;
+  $('#showSubjectMedium').textContent = `${subjectIcon(state.subject)} Std ${state.cls} • ${state.subject} • ${state.medium==='EM'?'English Medium':'தமிழ் மீடியம்'} • ${state.mode==='additional'?'Additional MCQs':'Book Back MCQs'}`;
   renderChapterList();
   show('screen-chapters');
 };
@@ -8578,6 +9344,11 @@ function renderChapterList(){
   const listEl = $('#chapterList'); listEl.innerHTML='';
   const mixState = new Array(state.chapters.length).fill(false);
 
+  $('#chaptersStepTitle').textContent = state.mode==='additional'
+    ? 'Step 4 — Choose a Chapter (Additional MCQs)'
+    : 'Step 4 — Choose a Chapter (Book Back MCQs)';
+  updateTryOtherModeBanner();
+
   // reset the two collapsible boxes + toggle buttons each time we (re)render
   $('#customTestBox').classList.add('hidden');
   $('#randomTestBox').classList.add('hidden');
@@ -8589,7 +9360,7 @@ function renderChapterList(){
     // mix checkbox row
     const row = document.createElement('div');
     row.className='chapter-row';
-    row.innerHTML = `<input type="checkbox" id="mixchk${idx}"> <span class="ch-title ${state.medium==='TM'?'tamil':''}" style="cursor:default;font-weight:500;">${chapterTitle(ch)}</span><span class="ch-count">${ch.q.length} Qs</span>`;
+    row.innerHTML = `<input type="checkbox" id="mixchk${idx}"> <span class="ch-title ${state.medium==='TM'?'tamil':''}" style="cursor:default;font-weight:500;">${chapterTitle(ch)}</span><span class="ch-count">${effectiveQ(ch, state.medium).length} Qs</span>`;
     mixEl.appendChild(row);
     row.querySelector('input').onchange = (e)=>{
       mixState[idx]=e.target.checked;
@@ -8599,14 +9370,14 @@ function renderChapterList(){
     // normal chapter row
     const crow = document.createElement('div');
     crow.className='chapter-row';
-    crow.innerHTML = `<span class="ch-title ${state.medium==='TM'?'tamil':''}">${chapterTitle(ch)}</span><span class="ch-count">${ch.q.length} Qs</span>`;
+    crow.innerHTML = `<span class="ch-title ${state.medium==='TM'?'tamil':''}">${chapterTitle(ch)}</span><span class="ch-count">${effectiveQ(ch, state.medium).length} Qs</span>`;
     crow.querySelector('.ch-title').onclick = ()=> startQuiz([idx], chapterTitle(ch));
     listEl.appendChild(crow);
   });
 
   function updateMixButton(){
     const selectedIdx = mixState.map((v,i)=>v?i:-1).filter(i=>i>=0);
-    const total = selectedIdx.reduce((sum,i)=> sum+state.chapters[i].q.length,0);
+    const total = selectedIdx.reduce((sum,i)=> sum+effectiveQ(state.chapters[i], state.medium).length,0);
     const btn = $('#startMixBtn');
     btn.textContent = `Start Mixed Test (${total} questions)`;
     btn.disabled = selectedIdx.length < 2;
@@ -8666,7 +9437,7 @@ function getRandomScopeIdxArr(){
 }
 function updateRandomQCountMax(){
   const idxArr = getRandomScopeIdxArr();
-  const max = idxArr.reduce((sum,i)=> sum + (state.chapters[i]? state.chapters[i].q.length : 0), 0);
+  const max = idxArr.reduce((sum,i)=> sum + (state.chapters[i]? effectiveQ(state.chapters[i], state.medium).length : 0), 0);
   const input = $('#randomQCount');
   input.max = max || 1;
   if(max && parseInt(input.value,10) > max) input.value = max;
@@ -8680,7 +9451,7 @@ $('#randomToSel').onchange = updateRandomQCountMax;
 $('#startRandomBtn').onclick = ()=>{
   const idxArr = getRandomScopeIdxArr();
   if(idxArr.length===0){ alert('No chapters available.'); return; }
-  const totalAvailable = idxArr.reduce((sum,i)=> sum + state.chapters[i].q.length, 0);
+  const totalAvailable = idxArr.reduce((sum,i)=> sum + effectiveQ(state.chapters[i], state.medium).length, 0);
   let count = parseInt($('#randomQCount').value,10);
   if(!count || count < 1) count = totalAvailable;
   if(count > totalAvailable) count = totalAvailable;
@@ -8705,33 +9476,33 @@ function saveWeakMap(map){
   try{ localStorage.setItem(WEAK_STORAGE_KEY, JSON.stringify(map)); }
   catch(e){ /* storage unavailable — ignore silently */ }
 }
-function weakKey(cls,subject,chIdx,qIdx){ return `${cls}|${subject}|${chIdx}|${qIdx}`; }
+function weakKey(cls,subject,mode,chIdx,qIdx){ return `${cls}|${subject}|${mode||'book'}|${chIdx}|${qIdx}`; }
 
 function recordWeakResult(item, isCorrect){
   const map = loadWeakMap();
-  const key = weakKey(item.cls, item.subject, item.chIdx, item.qIdx);
+  const key = weakKey(item.cls, item.subject, item.mode, item.chIdx, item.qIdx);
   if(isCorrect){
     if(map[key]) delete map[key]; // mastered — drop it from the weak list
   } else {
-    map[key] = { cls:item.cls, subject:item.subject, chIdx:item.chIdx, qIdx:item.qIdx, ts:Date.now() };
+    map[key] = { cls:item.cls, subject:item.subject, mode:item.mode||'book', chIdx:item.chIdx, qIdx:item.qIdx, ts:Date.now() };
   }
   saveWeakMap(map);
 }
 
-// Scoped to the class + subject currently selected (mirrors Custom/Mixed Test).
+// Scoped to the class + subject + mode currently selected (mirrors Custom/Mixed Test).
 function weakQuestionCount(){
   const map = loadWeakMap();
-  return Object.values(map).filter(e => e.cls===state.cls && e.subject===state.subject).length;
+  return Object.values(map).filter(e => e.cls===state.cls && e.subject===state.subject && (e.mode||'book')===(state.mode||'book')).length;
 }
 
 function buildWeakSet(){
   const map = loadWeakMap();
   const set = [];
   Object.values(map).forEach(entry=>{
-    if(entry.cls !== state.cls || entry.subject !== state.subject) return; // current class+subject only
+    if(entry.cls !== state.cls || entry.subject !== state.subject || (entry.mode||'book') !== (state.mode||'book')) return; // current class+subject+mode only
     const chapter = state.chapters[entry.chIdx];
     if(!chapter) return;
-    const q = chapter.q[entry.qIdx];
+    const q = effectiveQ(chapter, state.medium)[entry.qIdx];
     if(!q) return;
     set.push({
       chIdx: entry.chIdx, qIdx: entry.qIdx,
@@ -8739,6 +9510,7 @@ function buildWeakSet(){
       medium: state.medium, // always show in the currently selected medium
       subject: state.subject,
       cls: state.cls,
+      mode: state.mode||'book',
       qObj: q
     });
   });
@@ -8775,13 +9547,14 @@ $('#showWeakReviewBtn').onclick = startWeakReviewQuiz;
 function startQuiz(chapterIdxArr, title, forceShuffle, limit){
   let set = [];
   chapterIdxArr.forEach(ci=>{
-    state.chapters[ci].q.forEach((q,qi)=>{
+    effectiveQ(state.chapters[ci], state.medium).forEach((q,qi)=>{
       set.push({
         chIdx:ci, qIdx:qi,
         chTitle: chapterTitle(state.chapters[ci]),
         medium: state.medium,
         subject: state.subject,
         cls: state.cls,
+        mode: state.mode||'book',
         qObj: q
       });
     });
@@ -8948,6 +9721,7 @@ function finishQuiz(){
   $('#statWrong').textContent = wrong;
   $('#statPct').textContent = pct+'%';
   if(pct>=60) burstConfetti();
+  updateTryOtherModeResultsBanner();
 
   const reviewEl = $('#reviewList'); reviewEl.innerHTML='';
   const letters=['A','B','C','D'];
